@@ -73,15 +73,7 @@ The goal is not to overwhelm traders with complex accounting systems, but to pro
 * Help traders understand business performance
 * Monitor profits, expenses, and cash flow
 * Reduce uncertainty around daily earnings
-
----
-
-## Debt & Customer Tracking
-
-* Record customer debts and repayments
-* Keep better financial records
-* Reduce forgotten or untracked credit sales
-
+  
 ---
 
 ## Built for Everyday Traders
