@@ -179,4 +179,4 @@ For feedback, collaboration, or partnership opportunities, feel free to reach ou
 
 # ZapCart
 
-Helping merchants spend less time stressing over records — and more time growing their businesses.
+Helping merchants spend less time stressing over records, and more time growing their businesses.
