@@ -3,6 +3,14 @@ import App from './App';
 import './index.css';
 import { logger, LogCategory } from '@/services/logger';
 import initBreezSDK from '@breeztech/breez-sdk-spark';
+import { registerSW } from 'virtual:pwa-register';
+
+// Register service worker for offline support
+registerSW({
+  onOfflineReady() {
+    console.log('ZapCart ready to work offline');
+  },
+});
 
 // Hide the initial splash screen - exported so App can call it when truly ready
 export function hideSplash() {

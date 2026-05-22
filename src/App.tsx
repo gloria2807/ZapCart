@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { WifiOff } from 'lucide-react';
 import { WalletProvider } from './contexts/WalletContext';
 import LoadingSpinner from './components/LoadingSpinner';
 import PaymentReceivedCelebration from './components/PaymentReceivedCelebration';
@@ -25,6 +26,33 @@ import { useIOSViewportFix } from './hooks/useIOSViewportFix';
 import type { Seed } from '@breeztech/breez-sdk-spark';
 
 type Screen = 'home' | 'restore' | 'generate' | 'wallet' | 'getRefund' | 'settings' | 'backup' | 'fiatCurrencies' | 'passkey' | 'pos' | 'sales' | 'inventory';
+
+const OfflineBadge: React.FC = () => {
+  const [isOnline, setIsOnline] = useState(() => navigator.onLine);
+
+  useEffect(() => {
+    const on = () => setIsOnline(true);
+    const off = () => setIsOnline(false);
+    window.addEventListener('online', on);
+    window.addEventListener('offline', off);
+    return () => {
+      window.removeEventListener('online', on);
+      window.removeEventListener('offline', off);
+    };
+  }, []);
+
+  if (isOnline) return null;
+
+  return (
+    <div
+      className="fixed right-3 z-[200] flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-600 text-[11px] font-semibold shadow-sm pointer-events-none"
+      style={{ top: 'calc(0.75rem + env(safe-area-inset-top, 0px))' }}
+    >
+      <WifiOff size={11} />
+      <span>Offline</span>
+    </div>
+  );
+};
 
 const AppContent: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<Screen>('home');
@@ -220,6 +248,7 @@ const AppContent: React.FC = () => {
         />
       )}
       <InstallPrompt />
+      <OfflineBadge />
     </WalletProvider>
   );
 };
