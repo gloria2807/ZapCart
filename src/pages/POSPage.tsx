@@ -26,7 +26,7 @@ const POSPage: React.FC<POSPageProps> = ({ onBack }) => {
       <div className="flex items-center justify-between px-4 py-4 border-b border-slate-200 bg-white shrink-0">
         <button
           onClick={onBack}
-          className="text-purple-600 font-medium"
+          className="text-black font-medium"
         >
           Back
         </button>

@@ -1,0 +1,29 @@
+import { create } from 'zustand';
+
+export interface Product {
+  id: string;
+  name: string;
+  image: string;
+  priceNgn: number;
+  pricesats: number;
+}
+
+interface ProductStore {
+  products: Product[];
+  addProduct: (product: Product) => void;
+  removeProduct: (id: string) => void;
+}
+
+export const useProductStore = create<ProductStore>((set) => ({
+  products: [],
+
+  addProduct: (product) =>
+    set((state) => ({
+      products: [product, ...state.products],
+    })),
+
+  removeProduct: (id) =>
+    set((state) => ({
+      products: state.products.filter((p) => p.id !== id),
+    })),
+}));

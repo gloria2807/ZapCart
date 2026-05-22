@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { X, Plus } from 'lucide-react';
 import { useCartStore } from '../store/useCartStore';
 import { formatCurrencyFromSats, formatSats } from '../utils/formatCurrency';
+import { useProductStore } from '../store/useProductStore';
 
 interface ProductGridModalProps {
   isOpen: boolean;
@@ -15,18 +16,9 @@ interface ModalProduct {
   image: string;
 }
 
-const MOCK_PRODUCTS: ModalProduct[] = [
-  { id: 'p1', name: "Nutsy Peanut Butter", pricesats: 1500, image: "https://addide.com/cdn/shop/products/creeamysmooth227g_600x.png?v=1624533869" },
-  { id: 'p2', name: "CWAY (750ml)", pricesats: 1000, image: "https://africanfood.market/wp-content/uploads/2024/07/WhatsApp-Image-2024-07-28-at-10.14.40-PM-1.jpeg" },
-  { id: 'p3', name: "Pop-Cola (35cl)", pricesats: 250, image: "https://i0.wp.com/nextcashandcarry.com.ng/wp-content/uploads/2022/03/coke-35-1.jpg?w=550&ssl=1" },
-  { id: 'p4', name: "Bama Mayonnaise (810ml)", pricesats: 8000, image: "https://shalomafricanfoods.ca/storage/2025/01/5909-580x580.jpg" },
-  { id: 'p5', name: 'Golden Penny Spaghetti (500g)', pricesats: 1800, image: "https://africanmarketdubai.com/wp-content/uploads/2021/01/e16204dd-4b03-4190-a2c2-ce783bb28542.jpg" },
-  { id: 'p6', name: 'Fresh Palm Oil (5l)', pricesats: 13500, image: "https://localnaija.co.za/wp-content/uploads/2023/02/RED-OIL.png" },
-];
-
 export default function ProductGridModal({ isOpen, onClose }: ProductGridModalProps) {
   const { addProduct } = useCartStore();
-
+  const { products } = useProductStore();
   const handleAdd = (item: ModalProduct) => {
     addProduct({ ...item, quantity: 1 });
   };
@@ -70,7 +62,7 @@ export default function ProductGridModal({ isOpen, onClose }: ProductGridModalPr
         <div className="p-4 sm:p-6 overflow-y-auto flex-1 bg-white">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
 
-            {MOCK_PRODUCTS.map((item) => (
+            {products.map((item) => (
               <div
                 key={item.id}
                 className="bg-white border border-gray-200 rounded-2xl p-3 flex flex-col"
