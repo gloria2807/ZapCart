@@ -29,6 +29,7 @@ interface ReceivePaymentDialogProps {
   onClose: () => void;
 }
 
+
 interface QRCodeDisplayProps {
   paymentData: string;
   feeSats: number;

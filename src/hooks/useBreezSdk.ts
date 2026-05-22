@@ -52,6 +52,13 @@ const clearMnemonic = () => localStorage.removeItem(MNEMONIC_KEY);
 // Types
 // ============================================
 
+type PaymentWithMeta = Payment & {
+  metadata?: {
+    source?: string;
+    [key: string]: any;
+  };
+};
+
 export interface BreezSdkState {
   sdk: BreezSdk | null;
   isConnected: boolean;
@@ -181,21 +188,37 @@ export function useBreezSdk(
       refreshWalletData(false);
       fetchUnclaimedDeposits();
     } else if (event.type === 'paymentSucceeded') {
-      const paymentId = event.payment.id;
-      if (!shownPaymentIdsRef.current.has(paymentId)) {
-        shownPaymentIdsRef.current.add(paymentId);
-        setTimeout(() => shownPaymentIdsRef.current.delete(paymentId), 30000);
+  const payment = event.payment as Payment & {
+  metadata?: { source?: string };
+};
 
-        const isReceived = event.payment.paymentType === 'receive';
-        const amountSats = Number(event.payment.amount);
+  const paymentId = payment.id;
 
-        if (isReceived) {
-          setCelebrationAmount(amountSats);
-        }
-        // Send toast suppressed — ResultStep dialog already shows success
-      }
-      refreshWalletData(false);
-    } else if (event.type === 'claimedDeposits') {
+  if (!shownPaymentIdsRef.current.has(paymentId)) {
+    shownPaymentIdsRef.current.add(paymentId);
+
+    setTimeout(() => {
+      shownPaymentIdsRef.current.delete(paymentId);
+    }, 30000);
+
+    const isReceived = payment.paymentType === 'receive';
+    const amountSats = Number(payment.amount);
+
+    if (isReceived) {
+      setCelebrationAmount(amountSats);
+    }
+
+    if (payment.metadata?.source === 'pos') {
+      window.dispatchEvent(
+        new CustomEvent('pos-payment-settled', {
+          detail: payment,
+        })
+      );
+    }
+  }
+
+  refreshWalletData(false);
+} else if (event.type === 'claimedDeposits') {
       logger.info(LogCategory.PAYMENT, 'Deposits claimed', { count: event.claimedDeposits.length });
       showToastRef.current('success', 'Deposits Claimed Successfully', `${event.claimedDeposits.length} deposits were claimed`);
       refreshWalletData(false);

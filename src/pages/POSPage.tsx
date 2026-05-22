@@ -1,5 +1,7 @@
 import React, { useCallback, useState } from 'react';
-
+import { useEffect } from 'react';
+import { useSalesStore } from '../store/useSalesStore';
+import { useCartStore } from '../store/useCartStore';
 import Scanner from '../components/Scanner';
 import EmbeddedCart from '../components/EmbeddedCart';
 import ProductGridModal from '../components/ProductGridModal';
@@ -20,6 +22,35 @@ const POSPage: React.FC<POSPageProps> = ({ onBack }) => {
   const handleReceiveDialogClose = useCallback(() => {
     setIsReceiveDialogOpen(false);
   }, []);
+
+ const { addSale } = useSalesStore();
+const { items, total, clearCart } = useCartStore();
+
+useEffect(() => {
+  const handler = (event: any) => {
+  const payment = event.detail;
+  if (!payment) return;
+
+  const snapshotItems = [...items];
+  const snapshotTotal = total;
+
+  addSale({
+    id: crypto.randomUUID(),
+    items: snapshotItems,
+    totalSats: snapshotTotal,
+    createdAt: new Date().toISOString(),
+  });
+
+  clearCart();
+  setIsReceiveDialogOpen(false);
+};
+
+  window.addEventListener('pos-payment-settled', handler);
+
+  return () => {
+    window.removeEventListener('pos-payment-settled', handler);
+  };
+}, [addSale, clearCart, items, total]);
 
   return (
     <div className="h-[100dvh] flex flex-col bg-slate-50 overflow-hidden">
