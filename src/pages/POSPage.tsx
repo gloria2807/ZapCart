@@ -6,9 +6,6 @@ import ProductGridModal from '../components/ProductGridModal';
 
 import ReceivePaymentDialog from '../features/receive/ReceivePaymentDialog';
 
-import { useCartStore } from '../store/useCartStore';
-import { useSalesStore } from '../store/useSalesStore';
-
 interface POSPageProps {
   onBack: () => void;
 }
@@ -19,35 +16,10 @@ const POSPage: React.FC<POSPageProps> = ({ onBack }) => {
   // Receive dialog state
   const [isReceiveDialogOpen, setIsReceiveDialogOpen] = useState(false);
 
-  // Cart + Sales stores
-  const { items, clearCart } = useCartStore();
-  const { addSale } = useSalesStore();
-
   // Close dialog
   const handleReceiveDialogClose = useCallback(() => {
     setIsReceiveDialogOpen(false);
   }, []);
-
-  // Called after successful payment
-  const handlePaymentSuccess = () => {
-  if (items.length === 0) return;
-
-  const totalSats = items.reduce(
-    (sum, item) => sum + item.pricesats * item.quantity,
-    0
-  );
-
-  addSale({
-    id: crypto.randomUUID(),
-    items,
-    totalSats,
-    createdAt: new Date().toISOString(),
-  });
-
-  clearCart();
-
-  setIsReceiveDialogOpen(false);
-};
 
   return (
     <div className="h-[100dvh] flex flex-col bg-slate-50 overflow-hidden">
@@ -96,7 +68,6 @@ const POSPage: React.FC<POSPageProps> = ({ onBack }) => {
         isOpen={isReceiveDialogOpen}
         onClose={handleReceiveDialogClose}
 
-        onPaymentSuccess={handlePaymentSuccess}
       />
     </div>
   );

@@ -24,7 +24,7 @@ const LnurlWorkflow: React.FC<LnurlWorkflowProps> = ({ parsed, balanceSats, onBa
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [prepareResponse, setPrepareResponse] = useState<PrepareLnurlPayResponse | null>(null);
-
+  
   // derive constraints
   const minSats = useMemo(() => {
     const msat = parsed.minSendable ?? 0;
@@ -76,7 +76,12 @@ const LnurlWorkflow: React.FC<LnurlWorkflowProps> = ({ parsed, balanceSats, onBa
     setIsLoading(true);
     setError(null);
     try {
-      const resp = await onPrepare({ amountSats: sats, comment: comment ? comment : undefined, payRequest: parsed, feePolicy: feesIncluded ? 'feesIncluded' : undefined });
+      const resp = await onPrepare({
+  amount: BigInt(sats),
+  payRequest: parsed,
+  comment: comment || undefined,
+  feePolicy: feesIncluded ? 'feesIncluded' : undefined,
+});
       setPrepareResponse(resp);
       setStep('confirm');
     } catch (err) {

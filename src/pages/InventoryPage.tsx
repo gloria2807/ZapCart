@@ -13,7 +13,6 @@ const [imagePreview, setImagePreview] = useState<string>('');
 
   const [name, setName] = useState('');
   const [priceNgn, setPriceNgn] = useState('');
-  const [image, setImage] = useState('');
 
  const handleAdd = () => {
   if (!name || !priceNgn || !imageFile) return;

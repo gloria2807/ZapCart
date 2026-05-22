@@ -328,7 +328,9 @@ export function useBreezSdk(
   const handleBuyBitcoin = useCallback(async () => {
     if (!sdk) return;
     try {
-      const response = await sdk.buyBitcoin({});
+      const response = await sdk.buyBitcoin({
+  type: 'moonpay'
+})
       window.open(response.url, '_blank', 'noopener,noreferrer');
     } catch (e) {
       logger.error(LogCategory.SDK, 'Failed to open Buy Bitcoin', { error: formatError(e) });

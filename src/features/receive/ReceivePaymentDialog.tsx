@@ -27,7 +27,6 @@ import { ArrowDownIcon, LightningBoltIcon } from '../../components/Icons';
 interface ReceivePaymentDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onPaymentSuccess?: () => void;
 }
 
 interface QRCodeDisplayProps {
@@ -71,7 +70,7 @@ const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({ paymentData, feeSats, tit
   );
 };
 
-const ReceivePaymentDialog: React.FC<ReceivePaymentDialogProps> = ({ isOpen, onClose, onPaymentSuccess }): JSX.Element => {
+const ReceivePaymentDialog: React.FC<ReceivePaymentDialogProps> = ({ isOpen, onClose }): JSX.Element => {
   const receive = useReceivePayment();
   const [showChangeConfirm, setShowChangeConfirm] = useState<boolean>(false);
 
