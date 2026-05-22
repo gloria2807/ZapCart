@@ -12,7 +12,7 @@ export default function Scanner() {
 
   // 🔊 Beep sound
   const beep = () => {
-    const audio = new Audio("/beep.mp3"); // place file in /public
+    const audio = new Audio("/beep.mp3");
     audio.play().catch(() => {});
   };
 
@@ -38,7 +38,7 @@ export default function Scanner() {
 
         lastScanRef.current = { code: decodedText, time: now };
 
-        // ✅ Trigger feedback
+        // Flash feedback
         setFlash(true);
         beep();
 
@@ -57,32 +57,39 @@ export default function Scanner() {
   }, [scanBarcode]);
 
   return (
-    <div className="w-full h-full flex flex-col rounded-2xl overflow-hidden bg-white dark:bg-zinc-900">
+    <div className="w-full h-full flex flex-col rounded-2xl overflow-hidden bg-white border border-gray-200">
       
       {/* Header */}
-      <div className="px-4 py-2 bg-linear-to-r from-indigo-600 to-purple-600 text-white text-sm font-semibold">
-        Scan Product
+      <div className="px-4 py-3 border-b border-gray-200 bg-white">
+        <h2 className="text-sm font-semibold text-black">
+          Scan Product
+        </h2>
       </div>
 
       {/* Scanner Area */}
-      <div className="relative flex-1 flex items-center justify-center bg-zinc-100 dark:bg-zinc-800">
+      <div className="relative flex-1 flex items-center justify-center bg-white">
         
         {/* Scanner Feed */}
-        <div className="w-full max-w-xl mx-auto">
-  <div id="reader" className="w-full h-55 md:h-65 lg:h-75 overflow-hidden rounded-lg"></div>
-</div>
+        <div className="w-full max-w-xl mx-auto px-3">
+          <div
+            id="reader"
+            className="w-full h-55 md:h-65 lg:h-75 overflow-hidden rounded-xl"
+          />
+        </div>
 
         {/* Overlay Frame */}
         <div
-  className={`absolute w-40 h-24 sm:w-52 sm:h-32 md:w-56 md:h-36 rounded-lg pointer-events-none border-2 transition-all duration-200 ${
-    flash ? "border-green-400 scale-105" : "border-indigo-500"
-  }`}
->
-          <div className="absolute inset-0 border-2 border-dashed border-purple-400 opacity-60 rounded-lg"></div>
+          className={`absolute w-40 h-24 sm:w-52 sm:h-32 md:w-56 md:h-36 rounded-lg pointer-events-none border-2 transition-all duration-200 ${
+            flash
+              ? "border-black scale-105"
+              : "border-gray-700"
+          }`}
+        >
+          <div className="absolute inset-0 border-2 border-dashed border-gray-500 opacity-60 rounded-lg" />
         </div>
 
         {/* Instruction */}
-        <p className="absolute bottom-2 text-xs text-zinc-600 dark:text-zinc-300">
+        <p className="absolute bottom-3 text-xs text-gray-500">
           Align barcode within frame
         </p>
       </div>

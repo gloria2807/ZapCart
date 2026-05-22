@@ -17,12 +17,12 @@ interface ModalProduct {
 
 
 const MOCK_PRODUCTS: ModalProduct[] = [
-  { id: 'p1', name: "Nutsy Peanut Butter", pricesats: 1500, image: "https://freshtodommot.com/cdn/shop/products/nutzy-peanut-butter-extra-crunchy-227-g_710x.jpg?v=1757105179" },
-  { id: 'p2', name: "CWAY (750ml)", pricesats: 1000, image: "https://products.contact/234-home_default/cway-table-water-750ml.jpg" },
-  { id: 'p3', name: "Pop-Cola (35cl)", pricesats: 250, image: "https://mamudabeverages.com/wp-content/uploads/2024/03/popcola.jpg.webp" },
-  { id: 'p4', name: "Bama Mayonnaise (810ml)", pricesats: 8000, image: "https://www.bellanaija.com/wp-content/uploads/2024/08/BAMA-Mayonnaise-1.jpg" },
-  { id: 'p5', name: 'Golden Penny Spaghetti (500g)', pricesats: 1800, image: 'https://foodbridgeng.com/_next/image?url=https%3A%2F%2Fres.cloudinary.com%2Fdjxqinf6r%2Fimage%2Fupload%2Fv1716152293%2Fproducts%2Fgfocfvhhcj8izuuinoxf.png&w=3840&q=75' },
-  { id: 'p6', name: 'Fresh Palm Oil (5l)', pricesats: 13500, image: 'https://foodbridgeng.com/_next/image?url=https%3A%2F%2Fres.cloudinary.com%2Fdjxqinf6r%2Fimage%2Fupload%2Fv1719476446%2FGroup_6915_j67zrh.png&w=3840&q=75' },
+  { id: 'p1', name: "Nutsy Peanut Butter", pricesats: 1500, image: "https://addide.com/cdn/shop/products/creeamysmooth227g_600x.png?v=1624533869" },
+  { id: 'p2', name: "CWAY (750ml)", pricesats: 1000, image: "https://africanfood.market/wp-content/uploads/2024/07/WhatsApp-Image-2024-07-28-at-10.14.40-PM-1.jpeg" },
+  { id: 'p3', name: "Pop-Cola (35cl)", pricesats: 250, image: "https://i0.wp.com/nextcashandcarry.com.ng/wp-content/uploads/2022/03/coke-35-1.jpg?w=550&ssl=1" },
+  { id: 'p4', name: "Bama Mayonnaise (810ml)", pricesats: 8000, image: "https://shalomafricanfoods.ca/storage/2025/01/5909-580x580.jpg" },
+  { id: 'p5', name: 'Golden Penny Spaghetti (500g)', pricesats: 1800, image: "https://africanmarketdubai.com/wp-content/uploads/2021/01/e16204dd-4b03-4190-a2c2-ce783bb28542.jpg" },
+  { id: 'p6', name: 'Fresh Palm Oil (5l)', pricesats: 13500, image: "https://localnaija.co.za/wp-content/uploads/2023/02/RED-OIL.png" },
 ];
 
 export default function ProductGridModal({ isOpen, onClose }: ProductGridModalProps) {
