@@ -23,12 +23,16 @@
     "bip39": "^3.1.0",
     "buffer": "^6.0.3",
     "crypto-browserify": "^3.5.1",
+    "framer-motion": "^12.40.0",
+    "html5-qrcode": "^2.3.8",
     "jszip": "^3.10.1",
+    "lucide-react": "^1.16.0",
     "qr-scanner": "^1.4.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-qr-code": "^2.0.12",
-    "vercel": "^50.5.0"
+    "vercel": "^50.5.0",
+    "zustand": "^5.0.13"
   },
   "devDependencies": {
     "@playwright/test": "^1.52.0",
