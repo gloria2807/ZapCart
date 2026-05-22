@@ -11,10 +11,10 @@ export interface CartItem {
 
 // Product database for barcode scanning
 const PRODUCTS: CartItem[] = [
-  { id: "6156000211626", name: "Nutsy Peanut Butter", pricesats: 1500, quantity: 1, image: "https://freshtodommot.com/cdn/shop/products/nutzy-peanut-butter-extra-crunchy-227-g_710x.jpg?v=1757105179" },
-  { id: "6156000261201", name: "CWAY 750ml", pricesats: 1000, quantity: 1, image: "https://products.contact/234-home_default/cway-table-water-750ml.jpg" },
-  { id: "5060909050013", name: "Pop-Cola 35cl", pricesats: 250, quantity: 1, image: "https://mamudabeverages.com/wp-content/uploads/2024/03/popcola.jpg.webp" },
-  { id: "8410300367673", name: "Bama Mayonnaise 810ml", pricesats: 8000, quantity: 1, image: "https://www.bellanaija.com/wp-content/uploads/2024/08/BAMA-Mayonnaise-1.jpg" },
+  { id: "6156000211626", name: "Nutsy Peanut Butter", pricesats: 1500, quantity: 1, image: "././assets/nutsy.png" },
+  { id: "6156000261201", name: "CWAY 750ml", pricesats: 1000, quantity: 1, image: "././assets/cway.png" },
+  { id: "5060909050013", name: "Pop-Cola 35cl", pricesats: 250, quantity: 1, image: "././assets/redoil.png" },
+  { id: "8410300367673", name: "Bama Mayonnaise 810ml", pricesats: 8000, quantity: 1, image: "././assets/bama.png" },
 ];
 
 interface CartStore {
