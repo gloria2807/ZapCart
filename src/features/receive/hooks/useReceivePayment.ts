@@ -1,8 +1,38 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useWallet } from '../../../contexts/WalletContext';
 import { logger, LogCategory } from '@/services/logger';
 import { formatError } from '@/utils/formatError';
 import type { PaymentMethod, ReceiveStep } from '../../../types/domain';
+
+// --- Persistence helpers ---
+const CACHE_KEYS = {
+  spark: 'receive_cache_spark_address',
+  bitcoin: 'receive_cache_bitcoin_address',
+};
+
+function readCache(key: string): string | null {
+  try { return localStorage.getItem(key); } catch { return null; }
+}
+
+function writeCache(key: string, value: string): void {
+  try { localStorage.setItem(key, value); } catch { /* ignore */ }
+}
+
+// --- Offline detection ---
+function useIsOnline(): boolean {
+  const [isOnline, setIsOnline] = useState(() => navigator.onLine);
+  useEffect(() => {
+    const on = () => setIsOnline(true);
+    const off = () => setIsOnline(false);
+    window.addEventListener('online', on);
+    window.addEventListener('offline', off);
+    return () => {
+      window.removeEventListener('online', on);
+      window.removeEventListener('offline', off);
+    };
+  }, []);
+  return isOnline;
+}
 
 export interface UseReceivePaymentReturn {
   // State
@@ -19,6 +49,7 @@ export interface UseReceivePaymentReturn {
   sparkLoading: boolean;
   bitcoinLoading: boolean;
   showAmountPanel: boolean;
+  isOnline: boolean;
   // Actions
   setDescription: (desc: string) => void;
   setAmount: (amt: string) => void;
@@ -30,6 +61,7 @@ export interface UseReceivePaymentReturn {
 
 export function useReceivePayment(): UseReceivePaymentReturn {
   const wallet = useWallet();
+  const isOnline = useIsOnline();
 
   const [activeTab, setActiveTab] = useState<PaymentMethod>('lightning');
   const [currentStep, setCurrentStep] = useState<ReceiveStep>('loading_limits');
@@ -40,8 +72,9 @@ export function useReceivePayment(): UseReceivePaymentReturn {
   const [paymentData, setPaymentData] = useState<string>('');
   const [feeSats, setFeeSats] = useState<number>(0);
 
-  const [sparkAddress, setSparkAddress] = useState<string | null>(null);
-  const [bitcoinAddress, setBitcoinAddress] = useState<string | null>(null);
+  // Initialise from cache so addresses show immediately (even offline)
+  const [sparkAddress, setSparkAddress] = useState<string | null>(() => readCache(CACHE_KEYS.spark));
+  const [bitcoinAddress, setBitcoinAddress] = useState<string | null>(() => readCache(CACHE_KEYS.bitcoin));
   const [sparkLoading, setSparkLoading] = useState<boolean>(false);
   const [bitcoinLoading, setBitcoinLoading] = useState<boolean>(false);
   const [showAmountPanel, setShowAmountPanel] = useState<boolean>(false);
@@ -54,61 +87,83 @@ export function useReceivePayment(): UseReceivePaymentReturn {
     setIsLoading(false);
     setPaymentData('');
     setFeeSats(0);
-    setSparkAddress(null);
-    setBitcoinAddress(null);
+    // Don't clear addresses on reset — keep cached values visible
     setSparkLoading(false);
     setBitcoinLoading(false);
     setShowAmountPanel(false);
   }, []);
 
   const generateSparkAddress = useCallback(async () => {
-    if (sparkAddress || sparkLoading) return;
+    // Already have one (cached or fetched) — nothing to do
+    if (sparkAddress) return;
+
+    if (!isOnline) {
+      // No cache, no network — surface a clear message
+      setError('You\'re offline. Connect to the internet to generate a Spark address.');
+      return;
+    }
+
+    if (sparkLoading) return;
     setSparkLoading(true);
     try {
       const receiveResponse = await wallet.receivePayment({
         paymentMethod: { type: 'sparkAddress' },
       });
-      setSparkAddress(receiveResponse.paymentRequest);
+      const addr = receiveResponse.paymentRequest;
+      setSparkAddress(addr);
+      writeCache(CACHE_KEYS.spark, addr);
     } catch (err) {
       logger.error(LogCategory.PAYMENT, 'Failed to generate Spark address', { error: formatError(err) });
       setError(`Failed to generate Spark address: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setSparkLoading(false);
     }
-  }, [wallet, sparkAddress, sparkLoading]);
+  }, [wallet, sparkAddress, sparkLoading, isOnline]);
 
   const generateBitcoinAddress = useCallback(async () => {
-    if (bitcoinAddress || bitcoinLoading) return;
+    if (bitcoinAddress) return;
+
+    if (!isOnline) {
+      setError('You\'re offline. Connect to the internet to generate a Bitcoin address.');
+      return;
+    }
+
+    if (bitcoinLoading) return;
     setBitcoinLoading(true);
     try {
       const receiveResponse = await wallet.receivePayment({
         paymentMethod: { type: 'bitcoinAddress' },
       });
-      setBitcoinAddress(receiveResponse.paymentRequest);
+      const addr = receiveResponse.paymentRequest;
+      setBitcoinAddress(addr);
+      writeCache(CACHE_KEYS.bitcoin, addr);
     } catch (err) {
       logger.error(LogCategory.PAYMENT, 'Failed to generate Bitcoin address', { error: formatError(err) });
       setError(`Failed to generate Bitcoin address: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setBitcoinLoading(false);
     }
-  }, [wallet, bitcoinAddress, bitcoinLoading]);
+  }, [wallet, bitcoinAddress, bitcoinLoading, isOnline]);
 
   const generateBolt11Invoice = useCallback(async () => {
+    if (!isOnline) {
+      setError('You\'re offline. A live connection is required to generate a Lightning invoice.');
+      setShowAmountPanel(true);
+      return;
+    }
+
     logger.info(LogCategory.PAYMENT, 'Starting invoice generation', { amount });
     setError(null);
     setIsLoading(true);
     setCurrentStep('loading');
 
     if (showAmountPanel) {
-      logger.debug(LogCategory.PAYMENT, 'Closing amount panel before generating invoice');
       setShowAmountPanel(false);
     }
 
     try {
       const amountSats = parseInt(amount);
-      if (isNaN(amountSats)) {
-        throw new Error('Invalid amount');
-      }
+      if (isNaN(amountSats)) throw new Error('Invalid amount');
 
       logger.debug(LogCategory.PAYMENT, 'Calling wallet.receivePayment for bolt11 invoice', { amountSats });
       const receiveResponse = await wallet.receivePayment({
@@ -134,7 +189,7 @@ export function useReceivePayment(): UseReceivePaymentReturn {
       setIsLoading(false);
       logger.debug(LogCategory.PAYMENT, 'Receive invoice generation process finished');
     }
-  }, [wallet, amount, description, showAmountPanel]);
+  }, [wallet, amount, description, showAmountPanel, isOnline]);
 
   const handleTabChange = useCallback((tab: PaymentMethod, loadLightningAddress: () => void) => {
     setActiveTab(tab);
@@ -166,6 +221,7 @@ export function useReceivePayment(): UseReceivePaymentReturn {
     sparkLoading,
     bitcoinLoading,
     showAmountPanel,
+    isOnline,
     setDescription,
     setAmount,
     setShowAmountPanel,

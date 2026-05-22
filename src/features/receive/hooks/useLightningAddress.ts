@@ -5,6 +5,24 @@ import { generateRandomName } from '../../../utils/randomName';
 import { logger, LogCategory } from '@/services/logger';
 import { formatError } from '@/utils/formatError';
 
+// --- Cache helpers ---
+const CACHE_KEY = 'receive_cache_lightning_address';
+
+function readCachedAddress(): LightningAddressInfo | null {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    return raw ? (JSON.parse(raw) as LightningAddressInfo) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeCachedAddress(info: LightningAddressInfo): void {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(info));
+  } catch { /* ignore */ }
+}
+
 export interface UseLightningAddress {
   address: LightningAddressInfo | null;
   isLoading: boolean;
@@ -26,7 +44,8 @@ const UNSUPPORTED_MESSAGE = 'Lightning addresses are not available in this envir
 export const useLightningAddress = (): UseLightningAddress => {
   const wallet = useWallet();
 
-  const [address, setAddress] = useState<LightningAddressInfo | null>(null);
+  // Seed from cache immediately so it shows without any network call
+  const [address, setAddress] = useState<LightningAddressInfo | null>(() => readCachedAddress());
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [editValue, setEditValue] = useState<string>('');
@@ -49,8 +68,14 @@ export const useLightningAddress = (): UseLightningAddress => {
 
   const load = useCallback(async () => {
     if (!isSupported) {
-      if (!supportMessage) {
-        setSupportMessage(UNSUPPORTED_MESSAGE);
+      if (!supportMessage) setSupportMessage(UNSUPPORTED_MESSAGE);
+      return;
+    }
+
+    // If offline, the cached value seeded in useState is already showing — skip the network call
+    if (!navigator.onLine) {
+      if (!address) {
+        setError('You\'re offline. Connect to the internet to load your Lightning address.');
       }
       return;
     }
@@ -59,7 +84,6 @@ export const useLightningAddress = (): UseLightningAddress => {
     try {
       let addr = await wallet.getLightningAddress();
       if (!addr) {
-        // Generate a base username, then try with random 4-digit suffixes on collision
         const baseName = generateRandomName();
         for (let attempt = 0; attempt < 3; attempt++) {
           const suffix = attempt === 0 ? '' : String(Math.floor(1000 + Math.random() * 9000));
@@ -72,7 +96,9 @@ export const useLightningAddress = (): UseLightningAddress => {
           }
         }
       }
-      setAddress(addr ?? null);
+      const resolved = addr ?? null;
+      setAddress(resolved);
+      if (resolved) writeCachedAddress(resolved);
     } catch (err) {
       logger.error(LogCategory.PAYMENT, 'Failed to load Lightning address', {
         error: formatError(err),
@@ -80,17 +106,16 @@ export const useLightningAddress = (): UseLightningAddress => {
       if (err instanceof Error && /lnurl server is not configured/i.test(err.message)) {
         markUnsupported();
       } else {
-        setError(`Failed to load Lightning address: ${err instanceof Error ? err.message : 'Unknown error'}`);
+        // Don't wipe the cached address on error — keep showing it
+        setError(`Failed to refresh Lightning address: ${err instanceof Error ? err.message : 'Unknown error'}`);
       }
     } finally {
       setIsLoading(false);
     }
-  }, [wallet, isSupported, markUnsupported, supportMessage]);
+  }, [wallet, isSupported, markUnsupported, supportMessage, address]);
 
   const beginEdit = useCallback((currentAddress?: LightningAddressInfo | null) => {
-    if (!isSupported) {
-      return;
-    }
+    if (!isSupported) return;
     const addrStr = currentAddress?.lightningAddress ?? address?.lightningAddress ?? '';
     const initial = extractUsername(addrStr);
     setEditValue(initial);
@@ -109,6 +134,12 @@ export const useLightningAddress = (): UseLightningAddress => {
       markUnsupported();
       return;
     }
+
+    if (!navigator.onLine) {
+      setError('You\'re offline. Connect to the internet to save your Lightning address.');
+      return;
+    }
+
     const username = extractUsername(editValue.trim());
     if (!username) {
       setError('Please enter a username');
@@ -128,7 +159,9 @@ export const useLightningAddress = (): UseLightningAddress => {
 
       await wallet.registerLightningAddress({ username, description: `Pay to ${username}@breez.tips` });
       const actualInfo = await wallet.getLightningAddress();
-      setAddress(actualInfo ?? null);
+      const resolved = actualInfo ?? null;
+      setAddress(resolved);
+      if (resolved) writeCachedAddress(resolved);
       setIsEditing(false);
       setEditValue('');
     } catch (err) {
@@ -149,6 +182,7 @@ export const useLightningAddress = (): UseLightningAddress => {
     setIsEditing(false);
     setEditValue('');
     setError(null);
+    // Don't reset address — keep cached value visible
   }, []);
 
   return {
