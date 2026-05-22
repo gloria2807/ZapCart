@@ -6,6 +6,7 @@ export interface Product {
   image: string;
   priceNgn: number;
   pricesats: number;
+  stock: number;
 }
 
 interface ProductStore {

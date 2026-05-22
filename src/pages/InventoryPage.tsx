@@ -9,38 +9,42 @@ interface InventoryPageProps {
 const InventoryPage: React.FC<InventoryPageProps> = ({ onBack }) => {
   const { products, addProduct, removeProduct } = useProductStore();
   const [imageFile, setImageFile] = useState<File | null>(null);
-const [imagePreview, setImagePreview] = useState<string>('');
+  const [imagePreview, setImagePreview] = useState<string>('');
 
   const [name, setName] = useState('');
   const [priceNgn, setPriceNgn] = useState('');
+  const [stock, setStock] = useState('');
 
- const handleAdd = () => {
-  if (!name || !priceNgn || !imageFile) return;
+  const handleAdd = () => {
+    if (!name || !priceNgn || !imageFile) return;
 
-  const ngn = Number(priceNgn);
-  const sats = convertNgnToSats(ngn);
+    const ngn = Number(priceNgn);
+    const sats = convertNgnToSats(ngn);
 
-  addProduct({
-    id: crypto.randomUUID(),
-    name,
-    image: imagePreview, // 👈 use preview URL for now
-    priceNgn: ngn,
-    pricesats: sats,
-  });
+    addProduct({
+      id: crypto.randomUUID(),
+      name,
+      image: imagePreview,
+      priceNgn: ngn,
+      pricesats: sats,
+      stock: Number(stock) || 0,
+    });
 
-  setName('');
-  setPriceNgn('');
-  setImageFile(null);
-  setImagePreview('');
-};
+    setName('');
+    setPriceNgn('');
+    setStock('');
+    setImageFile(null);
+    setImagePreview('');
+  };
 
-const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  setImageFile(file);
-  setImagePreview(URL.createObjectURL(file));
-};
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
 
@@ -54,45 +58,57 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       </div>
 
       {/* Form */}
-<div className="p-4 space-y-3 border-b">
+      <div className="p-4 space-y-3 border-b">
 
-  <input
-    placeholder="Product name"
-    className="w-full border p-2 rounded text-black placeholder-gray-400"
-    value={name}
-    onChange={(e) => setName(e.target.value)}
-  />
+        <input
+          placeholder="Product name"
+          className="w-full border p-2 rounded text-black placeholder-gray-400"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
 
-  <input
-    placeholder="Price in Naira"
-    className="w-full border p-2 rounded text-black placeholder-gray-400"
-    value={priceNgn}
-    onChange={(e) => setPriceNgn(e.target.value)}
-  />
-<p className="text-xs text-gray-500">
-  Upload product image (recommended: square image)
-</p>
-  <input
-  type="file"
-  accept="image/*"
-  onChange={handleImageChange}
-  className="w-full border p-2 rounded text-black"
-/>
-{imagePreview && (
-  <img
-    src={imagePreview}
-    alt="Preview"
-    className="w-full h-40 object-cover rounded mt-2 border"
-  />
-)}
+        <input
+          placeholder="Price in Naira"
+          type="number"
+          min={0}
+          className="w-full border p-2 rounded text-black placeholder-gray-400"
+          value={priceNgn}
+          onChange={(e) => setPriceNgn(e.target.value)}
+        />
 
-  <button
-    onClick={handleAdd}
-    className="w-full bg-black text-white p-2 rounded"
-  >
-    Add Product
-  </button>
-</div>
+        <input
+          placeholder="Stock quantity"
+          type="number"
+          min={0}
+          className="w-full border p-2 rounded text-black placeholder-gray-400"
+          value={stock}
+          onChange={(e) => setStock(e.target.value)}
+        />
+
+        <p className="text-xs text-gray-500">
+          Upload product image (recommended: square image)
+        </p>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleImageChange}
+          className="w-full border p-2 rounded text-black"
+        />
+        {imagePreview && (
+          <img
+            src={imagePreview}
+            alt="Preview"
+            className="w-full h-40 object-cover rounded mt-2 border"
+          />
+        )}
+
+        <button
+          onClick={handleAdd}
+          className="w-full bg-black text-white p-2 rounded"
+        >
+          Add Product
+        </button>
+      </div>
 
       {/* List */}
       <div className="p-4 space-y-3">
@@ -104,6 +120,9 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
               <p className="font-medium">{p.name}</p>
               <p className="text-sm text-gray-600">
                 {formatCurrencyFromSats(p.pricesats)}
+              </p>
+              <p className="text-xs text-gray-400 mt-0.5">
+                {p.stock ?? 0} in stock
               </p>
             </div>
 
