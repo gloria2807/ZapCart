@@ -4,8 +4,6 @@ import { getFiatSettings } from '../services/settings';
 import { formatWithThinSpaces } from '../utils/formatNumber';
 import { useAnimatedNumber } from '../hooks/useAnimatedNumber';
 import { MenuIcon, AlertTriangleIcon, CurrencyIcon } from './Icons';
-import { useIsOnline } from '../hooks/useIsOnline';
-import { WifiOff } from 'lucide-react';
 
 // Module-level flag: once the balance count-up has played, skip it on remount.
 // Resets on full page reload.
@@ -35,7 +33,6 @@ const CollapsingWalletHeader: React.FC<CollapsingWalletHeaderProps> = ({
   onOpenGetRefund,
 }) => {
   const [activeFiatIndex, setActiveFiatIndex] = useState(0);
-  const isOnline = useIsOnline();
 
   // Build lookup maps for O(1) access (js-index-maps optimization)
   const ratesMap = useMemo(() => {
@@ -188,13 +185,6 @@ const CollapsingWalletHeader: React.FC<CollapsingWalletHeaderProps> = ({
 
           {/* Action buttons */}
           <div className="flex items-center gap-2">
-            {/* Offline badge */}
-            {!isOnline && (
-              <div className="flex items-center gap-1 h-9 px-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-600 text-xs font-semibold">
-                <WifiOff size={12} />
-                <span>Offline</span>
-              </div>
-            )}
             {/* Rejected deposits warning */}
             {hasRejectedDeposits && onOpenGetRefund && (
               <button
