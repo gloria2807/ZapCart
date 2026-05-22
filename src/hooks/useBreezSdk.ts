@@ -52,12 +52,6 @@ const clearMnemonic = () => localStorage.removeItem(MNEMONIC_KEY);
 // Types
 // ============================================
 
-type PaymentWithMeta = Payment & {
-  metadata?: {
-    source?: string;
-    [key: string]: any;
-  };
-};
 
 export interface BreezSdkState {
   sdk: BreezSdk | null;
