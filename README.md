@@ -1,36 +1,33 @@
 # ZapCart
 
-Merchants need a checkout experience that is instant, simple, and stress-free.
+ZapCart is a Lightning-powered merchant POS system designed for small businesses and everyday traders in Nigeria.
 
-ZapCart is a Lightning-powered merchant POS system built for small businesses and everyday traders. It helps merchants accept Bitcoin payments instantly while also simplifying sales tracking, record-keeping, and business management through a clean and intuitive checkout experience.
+It enables instant Bitcoin payments, simple checkout flows, and lightweight business tracking in a way that fits naturally into how informal traders already operate.
 
-Born from a real-life problem we experienced firsthand through our mother’s local store, ZapCart exists to help traders move away from stressful manual bookkeeping and gain better visibility into their daily business operations.
+Built from a real problem we experienced firsthand through our mother’s local store, ZapCart exists to help traders move away from stressful manual bookkeeping and gain better visibility into their daily business operations.
 
 ---
 
 ## The Problem
 
-Across Nigeria and many emerging markets, millions of small traders still rely on:
+Across many informal markets, small business owners still rely on manual methods to run their operations:
 
-* mental calculations,
-* paper notebooks,
-* scattered receipts,
-* and inconsistent records
+* Paper notebooks for sales tracking
+* Mental calculations during checkout
+* Disconnected or inconsistent records
+* Limited visibility into profit or loss
 
-to manage their businesses.
+This often leads to:
 
-This creates major challenges:
+* Frequent calculation errors
+* Difficulty tracking daily business performance
+* Lost or unrecorded transactions
+* Stressful end-of-day reconciliation
+* Limited financial insight for growth decisions
 
-* Difficulty tracking profits and losses
-* Poor debt and inventory management
-* Missing or inaccurate sales records
-* End-of-day balancing stress
-* Loss of capital over time
-* Limited financial visibility
+Most existing tools are either too complex or built for formal accounting systems rather than everyday traders.
 
-Many traders work hard daily but still struggle to clearly understand whether their businesses are actually growing.
-
-ZapCart is designed to change that.
+ZapCart exists to close that gap.
 
 ---
 
@@ -38,145 +35,389 @@ ZapCart is designed to change that.
 
 ZapCart combines:
 
-* instant Bitcoin Lightning payments,
-* lightweight business management,
-* and simple merchant workflows
+* Instant Bitcoin Lightning payments
+* Simple point-of-sale checkout flows
+* Lightweight sales tracking
+* Mobile-first merchant experience
+* Offline support
+* Embedded wallet functionality
+* Inventory management
 
-into one seamless experience.
-
-The goal is not to overwhelm traders with complex accounting systems, but to provide practical tools that fit naturally into how local businesses already operate.
-
----
-
-# Features
-
-## Instant Lightning Payments
-
-* Accept Bitcoin payments instantly
-* Fast and seamless checkout experience
-* QR code-based payments
-* Low-friction transactions for merchants and customers
+All in one system designed to remain fast, minimal, and easy to use.
 
 ---
 
-## Sales & Record Tracking
+## Features
 
-* Record daily sales easily
-* Track business income in real time
-* Reduce manual bookkeeping errors
-* Simplify end-of-day balancing
+### Lightning Payments (Breez SDK)
 
----
+ZapCart uses Breez SDK to power seamless Lightning transactions.
 
-## Profit & Loss Visibility
+#### Features
 
-* Help traders understand business performance
-* Monitor profits, expenses, and cash flow
-* Reduce uncertainty around daily earnings
-  
----
-
-## Built for Everyday Traders
-
-Designed specifically for:
-
-* provision stores,
-* kiosks,
-* roadside shops,
-* market traders,
-* and small retail businesses.
-
-ZapCart prioritizes:
-
-* simplicity,
-* speed,
-* accessibility,
-* and low learning curves.
+* Instant Bitcoin Lightning checkout
+* QR-based payment flow
+* Invoice generation and settlement
+* Real-time payment confirmations
+* Passkey authentication
+* Contacts management
+* Easy transfer of funds
+* Fiat conversion support
+* Transaction history tracking
+* Non-custodial Lightning infrastructure
 
 ---
 
-# Why We’re Building This
+### Merchant POS System
 
-Our inspiration came from watching our mother manage her local goods store.
+Designed for speed and simplicity during checkout.
 
-Like many traders, she sold everyday necessities such as:
+#### Features
 
-* detergents,
-* milk,
-* beverages,
-* and household items.
-
-Despite making sales consistently, balancing records was often stressful and inaccurate. Transactions happened quickly, customers bought on credit, and proper bookkeeping became difficult to maintain alongside daily business operations.
-
-We realized this was not an isolated issue.
-
-Millions of traders across Africa experience the same challenge every single day.
-
-ZapCart is our attempt to build something practical, accessible, and genuinely useful for them.
+* Quick item addition to cart
+* Barcode and QR scanning support
+* Cart-based checkout flow
+* Fast transaction completion
+* Optimized for low-friction retail environments
 
 ---
 
-# Who ZapCart Is For
+### Sales Tracking & Records
 
-ZapCart is built for:
+Simple tools for tracking business performance.
 
-* Small business owners
-* Informal retail merchants
-* Market traders
-* Corner-shop operators
-* Mobile vendors
-* Everyday entrepreneurs
+#### Features
 
-Especially those who:
-
-* currently keep records manually,
-* struggle with tracking profits,
-* or want a faster and easier checkout experience.
+* Daily sales logging
+* Lightweight transaction history
+* Revenue visibility
+* End-of-day sales summaries
 
 ---
 
-# Our Vision
+### Inventory Management
 
-We believe small businesses deserve modern financial tools that are:
+Inventory tracking built for merchants.
 
-* simple,
-* accessible,
-* and designed around their real-world needs.
+#### Features
 
-ZapCart aims to bridge the gap between traditional informal commerce and modern digital payments by making business management easier for everyday merchants.
-
----
-
-# Future Goals
-
-As ZapCart evolves, we hope to explore:
-
-* inventory management,
-* business analytics,
-* merchant insights,
-* offline-friendly experiences,
-* and broader financial tools for small businesses.
+* Easy stock uploads
+* Product inventory management
+* Product grid display
+* Convenient stock tracking
 
 ---
 
-# Contributing
+### Mobile-First Design
 
-We welcome ideas, feedback, and contributions from developers, designers, researchers, and anyone passionate about improving tools for small businesses and merchants.
+Built primarily for smartphones and low-tech adoption environments.
+
+#### Features
+
+* Large touch-friendly UI
+* Minimal checkout steps
+* Light mode for outdoor visibility
+* Responsive mobile experience
 
 ---
 
-# License
+### Secure Wallet Integration
+
+Security built directly into the experience.
+
+#### Features
+
+* Passkey login
+* Secure key handling
+* Safe Lightning transaction lifecycle management
+
+---
+
+## Tech Stack
+
+| Technology            | Purpose                      |
+| --------------------- | ---------------------------- |
+| TypeScript            | Type-safe development        |
+| React + Vite          | Frontend framework           |
+| Tailwind CSS          | Styling                      |
+| Breez SDK             | Lightning payments           |
+| Zustand               | State management             |
+| React Hook Form + Zod | Form handling and validation |
+| Node.js               | Backend/API routes           |
+
+---
+
+## Architecture
+
+### Frontend
+
+* TypeScript-based architecture
+* Mobile-first UI system
+* Component-driven structure
+* Optimized checkout experience
+
+### Payments Layer
+
+* Breez SDK integration
+* Lightning invoice generation
+* Settlement tracking
+* Real-time payment updates
+
+### State Management
+
+* Zustand-powered stores
+* Persistent-friendly architecture
+* Cart and merchant state management
+
+### Backend
+
+* Node.js API routes
+* Transaction validation
+* Payment session handling
+* Sales logging
+
+---
+
+## Structure Overview
+<img width="1536" height="1024" alt="ChatGPT Image May 22, 2026, 04_12_20 PM" src="https://github.com/user-attachments/assets/ec8cae68-fa24-4fb3-8021-4fc979612ce8" />
+
+---
+
+## Project Structure
+
+```bash
+src/
+├── components/
+│   ├── layout/
+│   ├── ui/
+│   ├── AlertCard.tsx
+│   ├── BreezLogo.tsx
+│   ├── CollapsingWalletHeader.tsx
+│   ├── EmbeddedCart.tsx
+│   ├── FeeBreakdownCard.tsx
+│   ├── Icons.tsx
+│   ├── InstallPrompt.tsx
+│   ├── LoadingSpinner.tsx
+│   ├── OnboardingStepper.tsx
+│   ├── PaymentDetailsDialog.tsx
+│   ├── PaymentReceivedCelebration.tsx
+│   ├── ProductGridModal.tsx
+│   ├── QrScannerDialog.tsx
+│   ├── Scanner.tsx
+│   ├── SideMenu.tsx
+│   ├── StagingGate.tsx
+│   ├── ToastNotification.tsx
+│   └── TransactionList.tsx
+├── constants/
+│   └── faucet.ts
+├── contexts/
+│   ├── ContactsContext.tsx
+│   ├── ToastContext.tsx
+│   └── WalletContext.tsx
+├── features/
+│   ├── receive/
+│   └── send/
+├── hooks/
+│   ├── buildConnectConfig.ts
+│   ├── index.ts
+│   ├── useAnimatedNumber.ts
+│   ├── useBreezSdk.ts
+│   ├── useContacts.ts
+│   ├── useIOSViewportFix.ts
+│   ├── useLatest.ts
+│   ├── usePlatform.ts
+│   ├── useQrScanner.ts
+│   └── useSecretTap.ts
+├── pages/
+│   ├── BackupPage.tsx
+│   ├── FiatCurrenciesPage.tsx
+│   ├── GeneratePage.tsx
+│   ├── GetRefundPage.tsx
+│   ├── HomePage.tsx
+│   ├── InventoryPage.tsx
+│   ├── PasskeyPage.tsx
+│   ├── POSPage.tsx
+│   ├── RestorePage.tsx
+│   ├── SalesPage.tsx
+│   ├── SettingsPage.tsx
+│   ├── UnclaimedDepositDetailsPage.tsx
+│   └── WalletPage.tsx
+├── services/
+│   ├── depositState.ts
+│   ├── logExport.ts
+│   ├── logger.test.ts
+│   ├── logger.ts
+│   ├── logStorage.ts
+│   ├── passkeyPrfProvider.ts
+│   ├── passkeyService.ts
+│   └── settings.ts
+├── store/
+│   ├── useCartStore.ts
+│   ├── useProductStore.ts
+│   └── useSalesStore.ts
+├── test/
+│   ├── mocks/
+│   ├── utils/
+│   ├── payment-scenario.spec.ts
+│   └── setup.ts
+├── types/
+│   └── domain.ts
+├── utils/
+│   ├── depositHelpers.test.ts
+│   ├── depositHelpers.ts
+│   ├── formatCurrency.ts
+│   ├── formatError.ts
+│   ├── formatNumber.ts
+│   ├── paymentDescription.ts
+│   └── randomName.ts
+├── App.tsx
+├── index.css
+├── main.tsx
+└── vite-env.d.ts
+```
+
+---
+
+## Lightning Payments Flow
+
+ZapCart uses Breez SDK to handle Lightning transactions.
+
+### Flow Overview
+
+1. Merchant creates a checkout session
+2. Invoice is generated through Breez SDK
+3. Customer scans QR code or pays through wallet/contact
+4. Payment is broadcast over the Lightning Network
+5. Settlement is confirmed
+6. Transaction is recorded automatically
+
+### Benefits
+
+* Instant settlement
+* Low transaction fees
+* No traditional banking delays
+* Real-time confirmations
+
+---
+
+## Installation
+
+### Prerequisites
+
+* Node.js 18+
+* npm or pnpm
+* Breez SDK access
+
+---
+
+### Setup
+
+```bash
+git clone https://github.com/your-org/zapcart.git
+
+cd zapcart
+
+npm install
+```
+
+---
+
+### Environment Variables
+
+Create a `.env.local` file:
+
+```env
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# Breez SDK
+BREEZ_API_KEY=your_breez_api_key
+```
+
+---
+
+### Run Development Server
+
+```bash
+npm run dev
+```
+
+Open:
+
+```bash
+http://localhost:3000
+```
+
+---
+
+## Usage
+
+### For Merchants
+
+* Add products to cart
+* Generate Lightning invoice
+* Customer pays via QR scan or wallet
+* Receive instant confirmation
+* Transaction automatically saved
+
+---
+
+### For Customers
+
+* Scan checkout QR code
+* Pay with Lightning wallet
+* Receive instant payment confirmation
+
+---
+
+## Development Scripts
+
+```bash
+npm run dev       # Start development server
+npm run build     # Build production app
+npm run start     # Start production server
+npm run lint      # Run lint checks
+```
+
+---
+
+## Future Improvements
+
+ZapCart is actively evolving toward:
+
+* Offline-first POS support
+* Advanced inventory management
+* Merchant analytics dashboard
+* Receipt generation
+* AI-powered sales insights
+* Expanded payment options
+
+---
+
+## Contributing
+
+We welcome contributions from developers, designers, and researchers interested in improving financial tools for small businesses.
+
+### How to Contribute
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+---
+
+## License
 
 MIT License
 
 ---
 
-# Support
+## Support
 
-For feedback, collaboration, or partnership opportunities, feel free to reach out through this repository.
+For feedback, collaboration, or questions, feel free to open an issue or discussion in the repository.
 
 ---
 
-# ZapCart
+## ZapCart
 
-Helping merchants spend less time stressing over records, and more time growing their businesses.
+Helping small businesses move from manual stress to simple, instant, and reliable commerce.
