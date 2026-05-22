@@ -14,7 +14,7 @@ export function buildConnectConfig(overrideNetwork?: Network): Config {
   }
 
   const urlParams = new URLSearchParams(window.location.search);
-  const network = (overrideNetwork ?? (urlParams.get('network') ?? 'mainnet')) as Network;
+  const network = (overrideNetwork ?? (urlParams.get('network') ?? 'regtest')) as Network;
   const config: Config = defaultConfig(network);
   config.apiKey = breezApiKey;
   config.privateEnabledDefault = false;
