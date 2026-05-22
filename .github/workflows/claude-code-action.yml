@@ -1,0 +1,26 @@
+name: Claude Code
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  sdk-upgrade:
+    if: github.event.label.name == 'sdk-upgrade'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          label_trigger: "sdk-upgrade"
+          prompt: |
+            Follow the instructions in the issue body to upgrade the SDK.
+            Check the release notes at https://github.com/breez/spark-sdk/releases for breaking changes between the current and target versions.
+            Create a PR with the changes when done.

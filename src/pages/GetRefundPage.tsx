@@ -1,0 +1,552 @@
+import React, { useCallback, useEffect, useState } from 'react';
+import { useWallet } from '../contexts/WalletContext';
+import type { DepositInfo, Fee, SdkEvent } from '@breeztech/breez-sdk-spark';
+import { LoadingSpinner, PrimaryButton, SecondaryButton, FormInput, BottomSheetContainer, BottomSheetCard, DialogHeader, CollapsibleCodeField, PaymentInfoCard } from '../components/ui';
+import { SimpleAlert } from '../components/AlertCard';
+import { FeeBreakdownCard } from '../components/FeeBreakdownCard';
+import { CloseIcon, CheckIcon, WarningIcon, RadioCheckIcon } from '../components/Icons';
+import { isDepositRejected, removeRejectedDeposit } from '../services/depositState';
+import { formatWithSpaces } from '../utils/formatNumber';
+import SlideInPage from '@/components/layout/SlideInPage';
+import { logger, LogCategory } from '@/services/logger';
+
+interface GetRefundPageProps {
+  onBack: () => void;
+  animationDirection?: 'left' | 'up';
+}
+
+type RefundStep = 'address' | 'fee' | 'confirm' | 'processing' | 'result';
+
+const GetRefundPage: React.FC<GetRefundPageProps> = ({ onBack, animationDirection = 'left' }) => {
+  const wallet = useWallet();
+
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [deposits, setDeposits] = useState<DepositInfo[]>([]);
+
+  // Refund flow state
+  const [selectedDeposit, setSelectedDeposit] = useState<DepositInfo | null>(null);
+  const [isRefundFlowOpen, setIsRefundFlowOpen] = useState<boolean>(false);
+  const [refundStep, setRefundStep] = useState<RefundStep>('address');
+  const [destination, setDestination] = useState<string>('');
+  const [selectedFeeRate, setSelectedFeeRate] = useState<'fast' | 'medium' | 'slow' | null>(null);
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [refundError, setRefundError] = useState<string | null>(null);
+  const [refundSuccess, setRefundSuccess] = useState<boolean>(false);
+  const [refundTxId, setRefundTxId] = useState<string | null>(null);
+  const [isTxIdVisible, setIsTxIdVisible] = useState<boolean>(false);
+
+  // Fee estimates (simplified - in real implementation, get from SDK)
+  const feeEstimates = {
+    slow: 500,
+    medium: 1000,
+    fast: 2000
+  };
+
+  // State for expandable transaction ID fields in examples
+  const [expandedTxIds, setExpandedTxIds] = useState<Record<string, boolean>>({});
+
+  const load = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const list = (await wallet.listUnclaimedDeposits({})).deposits;
+      // Only show deposits that have been rejected
+      const rejectedDeposits = list.filter(d => isDepositRejected(d.txid, d.vout));
+
+      // Sort: non-broadcasted (no refundTxId) first, then broadcasted
+      const sortedDeposits = rejectedDeposits.sort((a, b) => {
+        const aHasRefund = hasRefundTx(a);
+        const bHasRefund = hasRefundTx(b);
+
+        // Non-broadcasted (false) should come before broadcasted (true)
+        if (aHasRefund === bHasRefund) return 0;
+        return aHasRefund ? 1 : -1;
+      });
+
+      setDeposits(sortedDeposits);
+    } catch (e) {
+      logger.error(LogCategory.PAYMENT, 'Failed to load rejected deposits', {
+        error: e instanceof Error ? e.message : String(e),
+      });
+      setError('Failed to load rejected deposits');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [wallet]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  useEffect(() => {
+    let listenerId: string | null = null;
+    (async () => {
+      try {
+        listenerId = await wallet.addEventListener({ onEvent: (event: SdkEvent) => {
+          if (event.type === 'synced' || event.type === 'claimedDeposits' || event.type === 'unclaimedDeposits') {
+            void load();
+          }
+        } });
+      } catch (e) {
+        logger.warn(LogCategory.SDK, 'Failed to attach refund page event listener', {
+          error: e instanceof Error ? e.message : String(e),
+        });
+      }
+    })();
+
+    return () => {
+      if (listenerId) {
+        wallet.removeEventListener(listenerId).catch(() => { });
+      }
+    };
+  }, [wallet, load]);
+
+
+  const openRefundFlow = (deposit: DepositInfo) => {
+    setSelectedDeposit(deposit);
+    setDestination('');
+    setSelectedFeeRate(null);
+    setRefundError(null);
+    setRefundSuccess(false);
+    setRefundTxId(null);
+    setRefundStep('address');
+    setIsRefundFlowOpen(true);
+  };
+
+  const closeRefundFlow = () => {
+    setIsRefundFlowOpen(false);
+    setSelectedDeposit(null);
+  };
+
+  const handleContinueToFeeSelection = () => {
+    if (!selectedDeposit || !destination.trim()) return;
+    setRefundStep('fee');
+  };
+
+  const handleRefund = async () => {
+    if (!selectedDeposit || !selectedFeeRate || !destination.trim()) return;
+
+    setIsProcessing(true);
+    setRefundError(null);
+    setRefundStep('processing');
+
+    try {
+      const fee: Fee = { type: 'fixed', amount: feeEstimates[selectedFeeRate] };
+      const result = await wallet.refundDeposit({ txid: selectedDeposit.txid, vout: selectedDeposit.vout, destinationAddress: destination.trim(), fee });
+
+      // Remove from rejected list after successful refund
+      removeRejectedDeposit(selectedDeposit.txid, selectedDeposit.vout);
+
+      setRefundSuccess(true);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- SDK result type doesn't expose txId fields
+      setRefundTxId((result as any)?.txId || (result as any)?.txid || null);
+      setRefundStep('result');
+
+      await load();
+    } catch (e) {
+      logger.error(LogCategory.PAYMENT, 'Failed to refund deposit', {
+        error: e instanceof Error ? e.message : String(e),
+      });
+      setRefundError(e instanceof Error ? e.message : 'Failed to refund deposit');
+      setRefundStep('confirm');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const getSelectedFee = () => {
+    if (!selectedFeeRate) return 0;
+    return feeEstimates[selectedFeeRate];
+  };
+
+  const getRefundAmount = () => {
+    if (!selectedDeposit) return 0;
+    return selectedDeposit.amountSats - getSelectedFee();
+  };
+
+  // Check if deposit has been refunded
+  const hasRefundTx = (deposit: DepositInfo) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- SDK DepositInfo doesn't expose refund fields
+    const d = deposit as any;
+    return Boolean(d.refund_tx_id || d.refundTxId || d.refund_txid || d.refundTxid);
+  };
+
+  const getRefundTxId = (deposit: DepositInfo) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- SDK DepositInfo doesn't expose refund fields
+    const d = deposit as any;
+    return d.refund_tx_id || d.refundTxId || d.refund_txid || d.refundTxid || null;
+  };
+
+  // Get mempool.space URL for a transaction
+  const getMempoolUrl = (txid: string) => {
+    // Check URL params for network
+    const urlParams = new URLSearchParams(window.location.search);
+    const network = urlParams.get('network') ?? 'mainnet';
+
+    if (network === 'testnet') {
+      return `https://mempool.space/testnet/tx/${txid}`;
+    }
+    return `https://mempool.space/tx/${txid}`;
+  };
+
+  return (
+  <SlideInPage title="Get Refund" onClose={onBack} slideFrom={animationDirection}>
+    <div className="p-4 bg-white">
+      <div className="max-w-xl mx-auto w-full space-y-6">
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto">
+          {isLoading && (
+            <div className="py-16 flex justify-center">
+              <LoadingSpinner text="Loading rejected deposits..." />
+            </div>
+          )}
+
+          {error && (
+            <SimpleAlert variant="error">{error}</SimpleAlert>
+          )}
+
+          {!isLoading && deposits.length === 0 && (
+            <div className="py-16 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                <CheckIcon size="xl" className="text-black" />
+              </div>
+              <h3 className="font-display font-semibold text-black mb-2">All Clear!</h3>
+              <p className="text-gray-500 text-sm">No rejected deposits pending refund.</p>
+            </div>
+          )}
+
+          {!isLoading && deposits.length > 0 && (
+            <div className="space-y-4">
+              {deposits.map((dep, idx) => {
+                const amount = dep.amountSats;
+                const isRefunded = hasRefundTx(dep);
+                const refundedTxId = getRefundTxId(dep);
+                const txKey = `deposit-tx-${idx}`;
+                const refundKey = `deposit-refund-${idx}`;
+                const borderClass = isRefunded ? 'border-gray-300' : 'border-gray-200';
+
+                return (
+                  <div
+                    key={idx}
+                    className={`bg-white border ${borderClass} rounded-2xl p-5 space-y-4`}
+                  >
+                    {/* Amount */}
+                    <div className="flex items-center justify-between py-2">
+                      <span className="text-gray-700 text-sm">Amount</span>
+                      <span className="font-mono text-sm font-medium text-black">
+                        <span className="inline-flex items-center">
+                          <span className="text-[0.8em] opacity-70 mr-px">₿</span>
+                          {formatWithSpaces(amount)}
+                        </span>
+                      </span>
+                    </div>
+
+                    {/* Transaction IDs */}
+                    <div className="space-y-2">
+                      <CollapsibleCodeField
+                        label="Transaction ID"
+                        value={dep.txid}
+                        isVisible={expandedTxIds[txKey] || false}
+                        onToggle={() =>
+                          setExpandedTxIds(prev => ({
+                            ...prev,
+                            [txKey]: !prev[txKey]
+                          }))
+                        }
+                        href={getMempoolUrl(dep.txid)}
+                      />
+
+                      {isRefunded && refundedTxId && (
+                        <CollapsibleCodeField
+                          label="Refund Transaction ID"
+                          value={refundedTxId}
+                          isVisible={expandedTxIds[refundKey] || false}
+                          onToggle={() =>
+                            setExpandedTxIds(prev => ({
+                              ...prev,
+                              [refundKey]: !prev[refundKey]
+                            }))
+                          }
+                          href={getMempoolUrl(refundedTxId)}
+                        />
+                      )}
+                    </div>
+
+                    {/* Continue button - disabled if refund is being processed */}
+                    <div>
+                      {isRefunded ? (
+                        <button
+                          disabled
+                          className="w-full px-4 py-3 bg-gray-100 text-black rounded-xl font-medium cursor-not-allowed"
+                        >
+                          <span className="animate-pulse-slow">Broadcasting</span>
+                        </button>
+                      ) : (
+                        <PrimaryButton
+                          onClick={() => openRefundFlow(dep)}
+                          className="w-full"
+                        >
+                          Continue
+                        </PrimaryButton>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+
+    {/* Refund Flow Bottom Sheet */}
+    <BottomSheetContainer isOpen={isRefundFlowOpen} onClose={closeRefundFlow}>
+      <BottomSheetCard>
+        <DialogHeader
+          title={
+            refundStep === 'result'
+              ? refundSuccess
+                ? 'Refund Sent'
+                : 'Refund Failed'
+              : 'Refund to Bitcoin'
+          }
+          onClose={closeRefundFlow}
+        />
+
+        <div className="space-y-6">
+          {/* Step 1: Address Input */}
+          {refundStep === 'address' && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Destination
+                </label>
+                <FormInput
+                  id="refund-destination"
+                  type="text"
+                  value={destination}
+                  onChange={(e) => setDestination(e.target.value)}
+                  placeholder="bc1q..."
+                />
+                <p className="text-gray-500 text-xs mt-2">
+                  Enter the Bitcoin address where you want to receive the refund.
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <SecondaryButton onClick={closeRefundFlow} className="flex-1">
+                  Cancel
+                </SecondaryButton>
+                <PrimaryButton
+                  onClick={handleContinueToFeeSelection}
+                  disabled={!destination.trim()}
+                  className="flex-1"
+                >
+                  Continue
+                </PrimaryButton>
+              </div>
+            </>
+          )}
+
+          {/* Step 2: Fee Selection */}
+          {refundStep === 'fee' && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-black mb-2">
+                  Select Fee Rate
+                </label>
+
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    onClick={() => setSelectedFeeRate('slow')}
+                    className={`relative p-3 rounded-lg border text-sm font-medium transition-colors ${
+                      selectedFeeRate === 'slow'
+                        ? 'bg-black text-white border-black ring-2 ring-gray-300'
+                        : 'bg-white text-black border-gray-200 hover:border-gray-400'
+                    }`}
+                  >
+                    {selectedFeeRate === 'slow' && (
+                      <RadioCheckIcon className="absolute top-2 right-2" />
+                    )}
+                    <div>Slow</div>
+                    <div className="text-xs opacity-70">
+                      ₿{formatWithSpaces(feeEstimates.slow)}
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => setSelectedFeeRate('medium')}
+                    className={`relative p-3 rounded-lg border text-sm font-medium transition-colors ${
+                      selectedFeeRate === 'medium'
+                        ? 'bg-black text-white border-black ring-2 ring-gray-300'
+                        : 'bg-white text-black border-gray-200 hover:border-gray-400'
+                    }`}
+                  >
+                    {selectedFeeRate === 'medium' && (
+                      <RadioCheckIcon className="absolute top-2 right-2" />
+                    )}
+                    <div>Medium</div>
+                    <div className="text-xs opacity-70">
+                      ₿{formatWithSpaces(feeEstimates.medium)}
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => setSelectedFeeRate('fast')}
+                    className={`relative p-3 rounded-lg border text-sm font-medium transition-colors ${
+                      selectedFeeRate === 'fast'
+                        ? 'bg-black text-white border-black ring-2 ring-gray-300'
+                        : 'bg-white text-black border-gray-200 hover:border-gray-400'
+                    }`}
+                  >
+                    {selectedFeeRate === 'fast' && (
+                      <RadioCheckIcon className="absolute top-2 right-2" />
+                    )}
+                    <div>Fast</div>
+                    <div className="text-xs opacity-70">
+                      ₿{formatWithSpaces(feeEstimates.fast)}
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <PrimaryButton
+                  onClick={() => setRefundStep('address')}
+                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-black"
+                  disabled={false}
+                >
+                  Back
+                </PrimaryButton>
+
+                <PrimaryButton
+                  onClick={() => setRefundStep('confirm')}
+                  disabled={!selectedFeeRate}
+                  className="flex-1"
+                >
+                  Continue
+                </PrimaryButton>
+              </div>
+            </>
+          )}
+
+          {/* Step 3: Confirm */}
+          {refundStep === 'confirm' && selectedDeposit && (
+            <>
+              {/* Breakdown */}
+              <FeeBreakdownCard
+                items={[
+                  { label: 'Amount', value: selectedDeposit.amountSats },
+                  { label: 'Network fee', value: getSelectedFee() },
+                  {
+                    label: 'You receive',
+                    value: getRefundAmount(),
+                    highlight: true,
+                  },
+                ]}
+              />
+
+              {refundError && (
+                <div className="bg-gray-100 border border-gray-300 rounded-2xl p-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-10 h-10 rounded-xl bg-gray-200 flex items-center justify-center flex-shrink-0">
+                      <WarningIcon size="md" className="text-black" />
+                    </div>
+                    <h3 className="font-display font-bold text-black">
+                      Refund Failed
+                    </h3>
+                  </div>
+
+                  <div className="pl-[52px]">
+                    <p className="text-gray-700 text-sm">{refundError}</p>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-3">
+                <SecondaryButton
+                  onClick={() => setRefundStep('fee')}
+                  className="flex-1"
+                >
+                  Back
+                </SecondaryButton>
+
+                <PrimaryButton
+                  onClick={handleRefund}
+                  disabled={isProcessing}
+                  className="flex-1"
+                >
+                  Refund
+                </PrimaryButton>
+              </div>
+            </>
+          )}
+
+          {/* Step 4: Processing */}
+          {refundStep === 'processing' && (
+            <div className="py-8 flex flex-col items-center justify-center">
+              <LoadingSpinner text="Processing refund..." />
+            </div>
+          )}
+
+          {/* Step 5: Result */}
+          {refundStep === 'result' && (
+            <>
+              <div className="text-center py-4">
+                {refundSuccess ? (
+                  <>
+                    <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                      <CheckIcon size="xl" className="text-black" />
+                    </div>
+
+                    <h3 className="font-display font-semibold text-black text-lg mb-2">
+                      Refund Broadcast
+                    </h3>
+
+                    <p className="text-gray-500 text-sm">
+                      Your refund has been sent to the Bitcoin network.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                      <CloseIcon size="xl" className="text-black" />
+                    </div>
+
+                    <h3 className="font-display font-semibold text-black text-lg mb-2">
+                      Refund Failed
+                    </h3>
+
+                    <p className="text-gray-700 text-sm">
+                      {refundError ||
+                        'An error occurred while processing your refund.'}
+                    </p>
+                  </>
+                )}
+              </div>
+
+              {refundSuccess && refundTxId && (
+                <PaymentInfoCard>
+                  <CollapsibleCodeField
+                    label="Transaction ID"
+                    value={refundTxId}
+                    isVisible={isTxIdVisible}
+                    onToggle={() => setIsTxIdVisible(prev => !prev)}
+                  />
+                </PaymentInfoCard>
+              )}
+
+              <PrimaryButton onClick={closeRefundFlow} className="w-full">
+                Done
+              </PrimaryButton>
+            </>
+          )}
+        </div>
+      </BottomSheetCard>
+    </BottomSheetContainer>
+  </SlideInPage>
+);
+};
+
+export default GetRefundPage;

@@ -1,0 +1,65 @@
+name: SDK Update Check
+
+on:
+  schedule:
+    - cron: '0 9 * * *'
+  workflow_dispatch:
+    inputs:
+      include-prerelease-upgrades:
+        description: 'Also detect when a stable release replaces a pre-release (e.g. 0.11.0-dev4 → 0.11.0)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for update and create issue
+        env:
+          GH_TOKEN: ${{ secrets.SDK_CHECK_PAT }}
+        run: |
+          set -euo pipefail
+
+          CURRENT=$(node -p "require('./package.json').dependencies['@breeztech/breez-sdk-spark']")
+
+          LATEST=$(npm view @breeztech/breez-sdk-spark versions --json | node -e "
+            const v = JSON.parse(require('fs').readFileSync(0, 'utf8'));
+            console.log(v.filter(x => /^\d+\.\d+\.\d+$/.test(x)).pop());
+          ")
+
+          echo "Current: $CURRENT, Latest: $LATEST"
+
+          # Strip range operators (^, ~, >=, etc.) and pre-release tags
+          # so ^0.11.0-dev4 becomes 0.11.0 for a clean comparison
+          CURRENT_BASE=$(echo "$CURRENT" | sed 's/^[^0-9]*//' | sed 's/-.*//')
+
+          if npx semver "$LATEST" -r ">$CURRENT_BASE" > /dev/null 2>&1; then
+            echo "New version available: $CURRENT_BASE → $LATEST"
+          elif [ "${{ inputs.include-prerelease-upgrades }}" = "true" ]; then
+            CURRENT_VER=$(echo "$CURRENT" | sed 's/^[^0-9]*//')
+            if [ "$CURRENT_VER" != "$CURRENT_BASE" ] && npx semver "$LATEST" -r ">=$CURRENT_BASE" > /dev/null 2>&1; then
+              echo "Stable release available for current pre-release: $CURRENT_VER → $LATEST"
+            else
+              echo "Up to date."; exit 0
+            fi
+          else
+            echo "Up to date."; exit 0
+          fi
+
+          COUNT=$(gh issue list --label sdk-upgrade --state open --json number --jq 'length')
+          [ "$COUNT" -gt 0 ] && echo "Open issue already exists." && exit 0
+
+          BODY="New stable release: \`$CURRENT\` → \`$LATEST\`
+
+          Update \`@breeztech/breez-sdk-spark\` in \`package.json\` to \`$LATEST\`, run \`npm install\`, then fix any type errors (\`npx tsc --noEmit\`) and test failures (\`npm test\`)."
+
+          gh issue create \
+            --title "chore: upgrade @breeztech/breez-sdk-spark to $LATEST" \
+            --label "sdk-upgrade" \
+            --body "$BODY"

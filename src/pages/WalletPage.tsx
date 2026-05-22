@@ -1,0 +1,319 @@
+import React, { useState, useRef, useCallback } from 'react';
+import { useWallet } from '../contexts/WalletContext';
+import { useToast } from '../contexts/ToastContext';
+import { logger, LogCategory } from '@/services/logger';
+import CollapsingWalletHeader from '../components/CollapsingWalletHeader';
+import SideMenu from '../components/SideMenu';
+import TransactionList from '../components/TransactionList';
+import { GetInfoResponse, Payment, Rate, FiatCurrency, DepositInfo } from '@breeztech/breez-sdk-spark';
+import { ArrowUpIcon, QrCodeIcon, ArrowDownIcon } from '../components/Icons';
+import { mergeDepositsWithTransactions, ExtendedPayment, isUnclaimedDepositPayment } from '@/utils/depositHelpers';
+import SendPaymentDialog from '../features/send/SendPaymentDialog';
+import ReceivePaymentDialog from '../features/receive/ReceivePaymentDialog';
+import QrScannerDialog from '../components/QrScannerDialog';
+import PaymentDetailsDialog from '../components/PaymentDetailsDialog';
+import UnclaimedDepositDetailsPage from './UnclaimedDepositDetailsPage';
+import SaveContactDialog from '../features/send/components/SaveContactDialog';
+
+interface WalletPageProps {
+  walletInfo: GetInfoResponse | null;
+  transactions: Payment[];
+  unclaimedDeposits: DepositInfo[];
+  fiatRates: Rate[];
+  fiatCurrencies: FiatCurrency[];
+  refreshWalletData: (showLoading?: boolean) => Promise<void>;
+  isSyncing: boolean;
+  error: string | null;
+  onClearError: () => void;
+  onLogout: () => void;
+  hasRejectedDeposits: boolean;
+  onOpenGetRefund: (source?: 'menu' | 'icon') => void;
+  onOpenSettings: () => void;
+  onOpenBackup: () => void;
+  onOpenPOS: () => void;
+  onOpenSales: () => void;
+  onOpenInventory: () => void;
+  onOpenBuyBitcoin: () => void;
+  onDepositChanged?: () => void;
+}
+
+const WalletPage: React.FC<WalletPageProps> = ({
+  walletInfo,
+  transactions,
+  unclaimedDeposits,
+  fiatRates,
+  fiatCurrencies,
+  refreshWalletData,
+  isSyncing,
+  onLogout,
+  hasRejectedDeposits,
+  onOpenGetRefund,
+  onOpenSettings,
+  onOpenBackup,
+  onOpenPOS,
+  onOpenSales,
+  onOpenInventory,
+  onOpenBuyBitcoin,
+  onDepositChanged,
+}) => {
+  const wallet = useWallet();
+  const { showToast } = useToast();
+  const [scrollProgress, setScrollProgress] = useState<number>(0);
+  const [isSendDialogOpen, setIsSendDialogOpen] = useState(false);
+  const [isReceiveDialogOpen, setIsReceiveDialogOpen] = useState(false);
+  const [isQrScannerOpen, setIsQrScannerOpen] = useState(false);
+  const [scannerOpenedFromSend, setScannerOpenedFromSend] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+  const [selectedDeposit, setSelectedDeposit] = useState<DepositInfo | null>(null);
+  const [paymentInput, setPaymentInput] = useState<string | null>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [saveContactAddress, setSaveContactAddress] = useState<string | null>(null);
+
+  const transactionsContainerRef = useRef<HTMLDivElement>(null);
+
+  // Refs for dialog states to use in stable callbacks (advanced-event-handler-refs optimization)
+  const dialogStateRef = useRef({ isSendDialogOpen, isReceiveDialogOpen, selectedPayment, selectedDeposit });
+  dialogStateRef.current = { isSendDialogOpen, isReceiveDialogOpen, selectedPayment, selectedDeposit };
+  const collapseThreshold = 100;
+
+  const handleScroll = useCallback(() => {
+    if (transactionsContainerRef.current) {
+      const scrollTop = transactionsContainerRef.current.scrollTop;
+      const progress = Math.min(1, scrollTop / collapseThreshold);
+      setScrollProgress(progress);
+    }
+  }, [collapseThreshold]);
+
+  const handlePaymentSelected = useCallback((payment: Payment | ExtendedPayment) => {
+    // Use ref to check dialog states without adding to dependencies
+    const { isSendDialogOpen, isReceiveDialogOpen, selectedPayment, selectedDeposit } = dialogStateRef.current;
+
+    // If any dialog is open, just close it without opening payment details
+    if (isSendDialogOpen || isReceiveDialogOpen || selectedPayment || selectedDeposit) {
+      setIsSendDialogOpen(false);
+      setIsReceiveDialogOpen(false);
+      setSelectedPayment(null);
+      setSelectedDeposit(null);
+      return;
+    }
+
+    // Check if this is an unclaimed deposit
+    if (isUnclaimedDepositPayment(payment) && payment.depositInfo) {
+      // Open deposit details dialog
+      setSelectedDeposit(payment.depositInfo);
+    } else {
+      // Open regular payment details
+      setSelectedPayment(payment);
+    }
+  }, []);
+
+  const handlePaymentDetailsClose = useCallback(() => {
+    setSelectedPayment(null);
+  }, []);
+
+  const handleDepositDetailsClose = useCallback(() => {
+    setSelectedDeposit(null);
+  }, []);
+
+  const handleDepositChanged = useCallback(async () => {
+    setSelectedDeposit(null);
+    onDepositChanged?.();
+    await refreshWalletData(false);
+  }, [onDepositChanged, refreshWalletData]);
+
+  const handleSuccessfulSend = useCallback((lightningAddress?: string) => {
+    if (lightningAddress) {
+      setTimeout(() => {
+        showToast('info', 'Save as contact?', lightningAddress, {
+          label: 'Save',
+          onClick: () => setSaveContactAddress(lightningAddress),
+        });
+      }, 500);
+    }
+  }, [showToast]);
+
+  const handleSendDialogClose = useCallback(() => {
+    setIsSendDialogOpen(false);
+    setPaymentInput(null);
+    refreshWalletData(false);
+  }, [refreshWalletData]);
+
+  const handleReceiveDialogClose = useCallback(() => {
+    setIsReceiveDialogOpen(false);
+    refreshWalletData(false);
+  }, [refreshWalletData]);
+
+  const handleQrScannerClose = useCallback(() => {
+    setIsQrScannerOpen(false);
+    // If scanner was opened from Send dialog, reopen it
+    if (scannerOpenedFromSend) {
+      setScannerOpenedFromSend(false);
+      setIsSendDialogOpen(true);
+    }
+  }, [scannerOpenedFromSend]);
+
+  const handleScanFromSendDialog = useCallback(() => {
+    setIsSendDialogOpen(false);
+    setPaymentInput(null);
+    setScannerOpenedFromSend(true);
+    setIsQrScannerOpen(true);
+  }, []);
+
+  const handleQrScan = async (data: string | null) => {
+    if (!data) return;
+
+    try {
+      const parseResult = await wallet.parse(data);
+      logger.debug(LogCategory.UI, 'Parsed QR result', {
+        resultType: parseResult.type,
+      });
+      setIsQrScannerOpen(false);
+      setScannerOpenedFromSend(false);
+      setPaymentInput(data);
+      setIsSendDialogOpen(true);
+    } catch (error) {
+      logger.error(LogCategory.UI, 'Failed to parse QR code', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-[calc(100dvh)] relative overflow-hidden">
+      {/* Atmospheric background */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-white blur-3xl" />
+        <div className="absolute bottom-1/4 right-0 w-[300px] h-[300px] bg-white blur-3xl" />
+      </div>
+
+      {/* Fixed header */}
+      <div className="sticky top-0 z-10">
+        <CollapsingWalletHeader
+          walletInfo={walletInfo}
+          fiatRates={fiatRates}
+          fiatCurrencies={fiatCurrencies}
+          scrollProgress={scrollProgress}
+          onOpenMenu={() => setIsMenuOpen(true)}
+          onOpenBuyBitcoin={onOpenBuyBitcoin}
+          isSyncing={isSyncing}
+          hasRejectedDeposits={hasRejectedDeposits}
+          onOpenGetRefund={() => onOpenGetRefund('icon')}
+        />
+      </div>
+
+      {/* Scrollable transaction list */}
+      <div
+        ref={transactionsContainerRef}
+        className="flex-grow overflow-y-auto relative z-0 scrollbar-hidden"
+        onScroll={handleScroll}
+      >
+        <TransactionList
+          transactions={mergeDepositsWithTransactions(transactions, unclaimedDeposits)}
+          onPaymentSelected={handlePaymentSelected}
+          isSyncing={isSyncing}
+        />
+      </div>
+
+      {/* Send Payment Dialog - always mounted for instant response */}
+      <SendPaymentDialog
+        isOpen={isSendDialogOpen}
+        onClose={handleSendDialogClose}
+        initialRawInput={paymentInput}
+        onScanQr={handleScanFromSendDialog}
+        onSuccessfulSend={handleSuccessfulSend}
+      />
+
+      {/* Receive Payment Dialog - always mounted for instant response */}
+      <ReceivePaymentDialog
+        isOpen={isReceiveDialogOpen}
+        onClose={handleReceiveDialogClose}
+      />
+
+      {/* QR Scanner Dialog */}
+      {isQrScannerOpen && (
+        <QrScannerDialog
+          isOpen={isQrScannerOpen}
+          onClose={handleQrScannerClose}
+          onScan={handleQrScan}
+        />
+      )}
+
+      {/* Payment Details Dialog */}
+      {selectedPayment && (
+        <PaymentDetailsDialog
+          optionalPayment={selectedPayment}
+          onClose={handlePaymentDetailsClose}
+        />
+      )}
+
+      {/* Unclaimed Deposit Details */}
+      {selectedDeposit && (
+        <UnclaimedDepositDetailsPage
+          deposit={selectedDeposit}
+          onBack={handleDepositDetailsClose}
+          onChanged={handleDepositChanged}
+        />
+      )}
+
+      {/* Bottom action bar - full width layout */}
+      <div className="bottom-bar flex items-center z-30">
+        {/* Send button */}
+        <button
+          onClick={() => setIsSendDialogOpen(true)}
+          className="action-button action-button-send"
+          data-testid="send-button"
+        >
+          <ArrowUpIcon />
+          <span>Send</span>
+        </button>
+
+        {/* QR Scanner button - viewfinder style */}
+        <button
+          onClick={() => setIsQrScannerOpen(true)}
+          className="qr-scanner-button"
+          aria-label="Scan QR Code"
+          data-testid="scan-button"
+        >
+          <span className="qr-corner qr-corner--tl" />
+          <span className="qr-corner qr-corner--tr" />
+          <span className="qr-corner qr-corner--bl" />
+          <span className="qr-corner qr-corner--br" />
+          <QrCodeIcon />
+        </button>
+
+        {/* Receive button */}
+        <button
+          onClick={() => setIsReceiveDialogOpen(true)}
+          className="action-button action-button-receive"
+          data-testid="receive-button"
+        >
+          <ArrowDownIcon />
+          <span>Receive</span>
+        </button>
+      </div>
+
+      {/* Save Contact Dialog */}
+      <SaveContactDialog
+        isOpen={!!saveContactAddress}
+        lightningAddress={saveContactAddress || ''}
+        onClose={() => setSaveContactAddress(null)}
+      />
+
+      {/* Side Menu */}
+      <SideMenu
+        isOpen={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
+        onLogout={onLogout}
+        onOpenSettings={onOpenSettings}
+        onOpenBackup={onOpenBackup}
+        onOpenPOS={onOpenPOS}
+        onOpenSales={onOpenSales}
+        onOpenInventory={onOpenInventory}
+        onOpenRefund={() => onOpenGetRefund('menu')}
+        hasRejectedDeposits={hasRejectedDeposits}
+      />
+    </div>
+  );
+};
+
+export default WalletPage;

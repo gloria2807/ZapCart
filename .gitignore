@@ -1,0 +1,20 @@
+node_modules/
+.env
+.env.*
+dist/
+.vercel
+.env*.local
+
+# Lint output
+lint_output.txt
+
+# Test outputs
+test-results/
+playwright-report/
+playwright/.cache/
+coverage/
+
+# Claude Code
+.claude/settings.local.json
+.claude/launch.json
+.claude/worktrees/
