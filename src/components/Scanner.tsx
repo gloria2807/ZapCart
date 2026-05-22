@@ -10,22 +10,19 @@ export default function Scanner() {
 
   const [flash, setFlash] = useState(false);
 
-  // 🔊 Beep sound
-  const beep = () => {
-    const audio = new Audio("/beep.mp3");
-    audio.play().catch(() => {});
-  };
 
   useEffect(() => {
     const scanner = new Html5QrcodeScanner(
-      "reader",
-      {
-        fps: 10,
-        qrbox: { width: 220, height: 140 },
-        aspectRatio: 1.5,
-      },
-      false
-    );
+  "reader",
+  {
+    fps: 10,
+    qrbox: { width: 220, height: 140 },
+    aspectRatio: 1.5,
+    showTorchButtonIfSupported: true,
+    showZoomSliderIfSupported: true,
+  },
+  false
+);
 
     scannerRef.current = scanner;
 
@@ -40,7 +37,6 @@ export default function Scanner() {
 
         // Flash feedback
         setFlash(true);
-        beep();
 
         setTimeout(() => setFlash(false), 300);
 

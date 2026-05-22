@@ -266,6 +266,32 @@ h6 {
   transition: all 0.1s ease;
 }
 
+/* FORCE html5-qrcode UI to match POS theme */
+#reader,
+#reader * {
+  color: black !important;
+}
+
+/* camera permission / scan messages */
+#reader__scan_region,
+#reader__dashboard_section,
+#reader__header_message {
+  color: black !important;
+}
+
+/* buttons inside scanner UI */
+#reader button,
+#reader select {
+  color: black !important;
+  background: white !important;
+  border: 1px solid #e5e7eb;
+}
+
+/* make borders match your POS theme */
+#reader__dashboard {
+  border-color: #e5e7eb !important;
+}
+
 /* Premium QR Scanner Button - Viewfinder Style */
 .qr-scanner-button {
   position: relative;
