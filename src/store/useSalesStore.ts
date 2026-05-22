@@ -22,11 +22,11 @@ interface SalesStore {
 }
 
 export const useSalesStore = create<SalesStore>()(
-  persist(
+  persist<SalesStore>(
     (set) => ({
       sales: [],
 
-      addSale: (sale) =>
+      addSale: (sale: Sale) =>
         set((state) => ({
           sales: [sale, ...state.sales],
         })),
