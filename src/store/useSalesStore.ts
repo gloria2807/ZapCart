@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 export interface SaleItem {
   id: string;
@@ -20,11 +21,18 @@ interface SalesStore {
   addSale: (sale: Sale) => void;
 }
 
-export const useSalesStore = create<SalesStore>((set) => ({
-  sales: [],
+export const useSalesStore = create<SalesStore>()(
+  persist(
+    (set) => ({
+      sales: [],
 
-  addSale: (sale) =>
-    set((state) => ({
-      sales: [sale, ...state.sales],
-    })),
-}));
+      addSale: (sale) =>
+        set((state) => ({
+          sales: [sale, ...state.sales],
+        })),
+    }),
+    {
+      name: 'sales-store',
+    }
+  )
+);

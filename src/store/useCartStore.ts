@@ -9,15 +9,6 @@ export interface CartItem {
   image: string;
 }
 
-interface AppState {
-  isSidebarOpen: boolean;
-  theme: 'light' | 'dark';
-  toggleSidebar: () => void;
-  setSidebarOpen: (isOpen: boolean) => void;
-  toggleTheme: () => void;
-  setTheme: (theme: 'light' | 'dark') => void;
-}
-
 // Product database for barcode scanning
 const PRODUCTS: CartItem[] = [
   { id: "6156000211626", name: "Nutsy Peanut Butter", pricesats: 1500, quantity: 1, image: "https://freshtodommot.com/cdn/shop/products/nutzy-peanut-butter-extra-crunchy-227-g_710x.jpg?v=1757105179" },
@@ -29,100 +20,90 @@ const PRODUCTS: CartItem[] = [
 interface CartStore {
   items: CartItem[];
   total: number;
-  scanBarcode: (barcode: string) => void; // For barcode scanning
-  addProduct: (product: CartItem) => void; // For manual modal addition
+  scanBarcode: (barcode: string) => void;
+  addProduct: (product: CartItem) => void;
   updateQuantity: (id: string, quantity: number) => void;
   removeItem: (id: string) => void;
   clearCart: () => void;
 }
 
-export const useCartStore = create<CartStore>((set, get) => ({
-  items: [],
-  total: 0,
-
-  // Barcode scan logic
-  scanBarcode: (barcode: string) => {
-    const product = PRODUCTS.find(p => p.id === barcode);
-    if (!product) return;
-
-    const existing = get().items.find(i => i.id === product.id);
-    if (existing) {
-      const newItems = get().items.map(i =>
-        i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i
-      );
-      set({
-        items: newItems,
-        total: newItems.reduce((acc, item) => acc + item.pricesats * item.quantity, 0)
-      });
-    } else {
-      const newItems = [...get().items, { ...product }];
-      set({
-        items: newItems,
-        total: newItems.reduce((acc, item) => acc + item.pricesats * item.quantity, 0)
-      });
-    }
-  },
-
-  // Manual add from modal (pass full product)
-  addProduct: (product: CartItem) => {
-    const existing = get().items.find(i => i.id === product.id);
-    if (existing) {
-      const newItems = get().items.map(i =>
-        i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i
-      );
-      set({
-        items: newItems,
-        total: newItems.reduce((acc, item) => acc + item.pricesats * item.quantity, 0)
-      });
-    } else {
-      const newItems = [...get().items, { ...product }];
-      set({
-        items: newItems,
-        total: newItems.reduce((acc, item) => acc + item.pricesats * item.quantity, 0)
-      });
-    }
-  },
-
-  updateQuantity: (id, quantity) => {
-    if (quantity <= 0) {
-      const newItems = get().items.filter(i => i.id !== id);
-      set({
-        items: newItems,
-        total: newItems.reduce((acc, item) => acc + item.pricesats * item.quantity, 0)
-      });
-    } else {
-      const newItems = get().items.map(i => i.id === id ? { ...i, quantity } : i);
-      set({
-        items: newItems,
-        total: newItems.reduce((acc, item) => acc + item.pricesats * item.quantity, 0)
-      });
-    }
-  },
-
-  removeItem: (id) => {
-    const newItems = get().items.filter(i => i.id !== id);
-    set({
-      items: newItems,
-      total: newItems.reduce((acc, item) => acc + item.pricesats * item.quantity, 0)
-    });
-  },
-
-  clearCart: () => set({ items: [], total: 0 })
-}));
-
-
-export const useStore = create<AppState>()(
+export const useCartStore = create<CartStore>()(
   persist(
-    (set) => ({
-      isSidebarOpen: false,
-      theme: 'light',
-      toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
-      setSidebarOpen: (isOpen) => set({ isSidebarOpen: isOpen }),
-      toggleTheme: () => set((state) => ({ theme: state.theme === 'light' ? 'dark' : 'light' })),
-      setTheme: (theme) => set({ theme }),
+    (set, get) => ({
+      items: [],
+      total: 0,
+
+      scanBarcode: (barcode: string) => {
+        const product = PRODUCTS.find(p => p.id === barcode);
+        if (!product) return;
+
+        const existing = get().items.find(i => i.id === product.id);
+
+        let newItems;
+
+        if (existing) {
+          newItems = get().items.map(i =>
+            i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i
+          );
+        } else {
+          newItems = [...get().items, { ...product }];
+        }
+
+        set({
+          items: newItems,
+          total: newItems.reduce((acc, item) => acc + item.pricesats * item.quantity, 0),
+        });
+      },
+
+      addProduct: (product: CartItem) => {
+        const existing = get().items.find(i => i.id === product.id);
+
+        let newItems;
+
+        if (existing) {
+          newItems = get().items.map(i =>
+            i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i
+          );
+        } else {
+          newItems = [...get().items, { ...product }];
+        }
+
+        set({
+          items: newItems,
+          total: newItems.reduce((acc, item) => acc + item.pricesats * item.quantity, 0),
+        });
+      },
+
+      updateQuantity: (id, quantity) => {
+        let newItems;
+
+        if (quantity <= 0) {
+          newItems = get().items.filter(i => i.id !== id);
+        } else {
+          newItems = get().items.map(i =>
+            i.id === id ? { ...i, quantity } : i
+          );
+        }
+
+        set({
+          items: newItems,
+          total: newItems.reduce((acc, item) => acc + item.pricesats * item.quantity, 0),
+        });
+      },
+
+      removeItem: (id) => {
+        const newItems = get().items.filter(i => i.id !== id);
+
+        set({
+          items: newItems,
+          total: newItems.reduce((acc, item) => acc + item.pricesats * item.quantity, 0),
+        });
+      },
+
+      clearCart: () => set({ items: [], total: 0 }),
     }),
     {
-      name: 'app-storage',
+      name: 'cart-store',
     }
   )
 );
