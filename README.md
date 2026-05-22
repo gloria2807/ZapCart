@@ -178,6 +178,11 @@ Security built directly into the experience.
 
 ---
 
+## Structure Overview
+<img width="1536" height="1024" alt="ChatGPT Image May 22, 2026, 04_12_20 PM" src="https://github.com/user-attachments/assets/ec8cae68-fa24-4fb3-8021-4fc979612ce8" />
+
+---
+
 ## Project Structure
 
 ```bash
