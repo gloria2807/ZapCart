@@ -347,9 +347,9 @@ Open:
 http://localhost:3000
 ```
 
----
-
 When logging in through passkey, if you encounter "Failed to save label to Nostr", close tab and try again.
+
+---
 
 ## Usage
 
@@ -386,7 +386,6 @@ npm run lint      # Run lint checks
 
 ZapCart is actively evolving toward:
 
-* Offline-first POS support
 * Advanced inventory management
 * Merchant analytics dashboard
 * Receipt generation
