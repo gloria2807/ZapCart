@@ -62,8 +62,20 @@ export const FormInput: React.FC<FormInputProps> = ({
     value={value}
     onChange={onChange}
     onKeyDown={onKeyDown}
-    className={`w-full bg-white border border-spark-border rounded-xl px-4 py-3 text-spark-text-primary placeholder-spark-text-muted focus:border-spark-primary focus:ring-0 transition-all ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
-    placeholder={placeholder}
+   className={`
+  w-full
+  bg-white
+  border border-spark-border
+  rounded-xl
+  px-4 py-3
+  text-gray-900
+  placeholder:text-gray-500
+  focus:border-spark-primary
+  focus:ring-0
+  transition-all
+  ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
+  ${className}
+`} placeholder={placeholder}
     min={min}
     max={max}
     disabled={disabled}
