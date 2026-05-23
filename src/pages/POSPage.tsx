@@ -20,12 +20,9 @@ const POSPage: React.FC<POSPageProps> = ({ onBack }) => {
   const { addSale } = useSalesStore();
   const { items, total, clearCart } = useCartStore();
 
-  // Snapshot cart at checkout time so the sale record is accurate
-  // even if the cart changes before the payment lands
   const cartSnapshotRef = useRef<{ items: typeof items; total: number } | null>(null);
 
   const handleCheckout = useCallback(() => {
-    // Take a snapshot of the cart the moment the customer confirms checkout
     cartSnapshotRef.current = { items: [...items], total };
     setIsReceiveDialogOpen(true);
   }, [items, total]);
@@ -35,13 +32,11 @@ const POSPage: React.FC<POSPageProps> = ({ onBack }) => {
     cartSnapshotRef.current = null;
   }, []);
 
-  // Register SDK payment listener while the receive dialog is open
   usePOSPaymentWatcher({
     isActive: isReceiveDialogOpen,
     onSettled: (amountSats) => {
       const snapshot = cartSnapshotRef.current;
 
-      // Record the sale
       addSale({
         id: crypto.randomUUID(),
         items: snapshot?.items ?? items,
@@ -49,71 +44,68 @@ const POSPage: React.FC<POSPageProps> = ({ onBack }) => {
         createdAt: new Date().toISOString(),
       });
 
-      // Clear cart and close dialog
       clearCart();
       setIsReceiveDialogOpen(false);
       cartSnapshotRef.current = null;
 
-      // Show celebration overlay
       setCelebrationAmount(amountSats);
     },
   });
 
   return (
-  <div className="min-h-[100dvh] flex flex-col bg-slate-50">
+    <div className="min-h-[100dvh] flex flex-col bg-slate-50">
 
-    {/* Header */}
-    <div className="flex items-center justify-between px-4 py-4 border-b border-slate-200 bg-white shrink-0 sticky top-0 z-20">
-      <button onClick={onBack} className="text-black font-medium">
-        Back
-      </button>
+      {/* HEADER */}
+      <div className="sticky top-0 z-20 flex items-center justify-between px-4 py-4 border-b border-slate-200 bg-white">
+        <button onClick={onBack} className="text-black font-medium">
+          Back
+        </button>
 
-      <h1 className="text-lg font-bold text-slate-900">
-        POS
-      </h1>
+        <h1 className="text-lg font-bold text-slate-900">
+          POS
+        </h1>
 
-      <div className="w-12" />
-    </div>
+        <div className="w-12" />
+      </div>
 
-    {/* Main Content */}
-    <div className="flex-1 flex flex-col gap-4 p-4 overflow-y-auto">
+      {/* MAIN CONTENT (natural scroll) */}
+      <div className="flex flex-col gap-4 p-4">
 
-      {/* Scanner */}
-      <div className="shrink-0">
+        {/* Scanner */}
         <Scanner />
+
+        {/* Cart */}
+        <div className="rounded-2xl bg-white shadow overflow-hidden">
+          <EmbeddedCart
+            onCheckout={handleCheckout}
+            onOpenProducts={() => setIsProductsOpen(true)}
+          />
+        </div>
+
       </div>
 
-      {/* Cart */}
-      <div className="min-h-[500px] rounded-2xl bg-white shadow overflow-hidden">
-        <EmbeddedCart
-          onCheckout={handleCheckout}
-          onOpenProducts={() => setIsProductsOpen(true)}
+      {/* Product Modal */}
+      <ProductGridModal
+        isOpen={isProductsOpen}
+        onClose={() => setIsProductsOpen(false)}
+      />
+
+      {/* Receive Payment Dialog */}
+      <ReceivePaymentDialog
+        isOpen={isReceiveDialogOpen}
+        onClose={handleReceiveDialogClose}
+      />
+
+      {/* Celebration */}
+      {celebrationAmount !== null && (
+        <PaymentReceivedCelebration
+          amount={celebrationAmount}
+          onClose={() => setCelebrationAmount(null)}
         />
-      </div>
+      )}
 
     </div>
-
-    {/* Product Modal */}
-    <ProductGridModal
-      isOpen={isProductsOpen}
-      onClose={() => setIsProductsOpen(false)}
-    />
-
-    {/* Receive Payment Dialog */}
-    <ReceivePaymentDialog
-      isOpen={isReceiveDialogOpen}
-      onClose={handleReceiveDialogClose}
-    />
-
-    {/* Celebration */}
-    {celebrationAmount !== null && (
-      <PaymentReceivedCelebration
-        amount={celebrationAmount}
-        onClose={() => setCelebrationAmount(null)}
-      />
-    )}
-  </div>
-);
+  );
 };
 
 export default POSPage;
