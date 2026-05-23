@@ -72,17 +72,22 @@ const POSPage: React.FC<POSPageProps> = ({ onBack }) => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 grid grid-rows-3 gap-4 p-4 overflow-hidden">
-        <div className="row-span-1 min-h-0">
-          <Scanner />
-        </div>
-        <div className="row-span-2 rounded-2xl bg-white shadow overflow-hidden min-h-0">
-          <EmbeddedCart
-            onCheckout={handleCheckout}
-            onOpenProducts={() => setIsProductsOpen(true)}
-          />
-        </div>
-      </div>
+<div className="flex-1 flex flex-col gap-4 p-4 overflow-hidden">
+  
+  {/* Scanner Section */}
+  <div className="shrink-0">
+    <Scanner />
+  </div>
+
+  {/* Cart Section */}
+  <div className="flex-1 min-h-0 rounded-2xl bg-white shadow overflow-hidden">
+    <EmbeddedCart
+      onCheckout={handleCheckout}
+      onOpenProducts={() => setIsProductsOpen(true)}
+    />
+  </div>
+
+</div>
 
       {/* Product Modal */}
       <ProductGridModal

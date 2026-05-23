@@ -159,7 +159,7 @@ const TransactionList: React.FC<TransactionListProps> = ({ transactions, onPayme
         <span
           className={`
             font-mono font-semibold text-[15px] flex-shrink-0 inline-flex items-center
-            ${isFailed ? 'text-gray-500 line-through' : ''}
+            ${isFailed ? 'text-gray-700 line-through' : ''}
             ${!isFailed && isReceive ? 'text-spark-success' : ''}
             ${!isFailed && !isReceive ? 'text-spark-electric' : ''}
           `}
