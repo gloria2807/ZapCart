@@ -53,22 +53,23 @@ const POSPage: React.FC<POSPageProps> = ({ onBack }) => {
   });
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-slate-50">
+  <div className="h-[100dvh] flex flex-col bg-slate-50 overflow-hidden">
 
-      {/* HEADER */}
-      <div className="sticky top-0 z-20 flex items-center justify-between px-4 py-4 border-b border-slate-200 bg-white">
-        <button onClick={onBack} className="text-black font-medium">
-          Back
-        </button>
+    {/* HEADER (fixed) */}
+    <div className="shrink-0 sticky top-0 z-20 flex items-center justify-between px-4 py-4 border-b border-slate-200 bg-white">
+      <button onClick={onBack} className="text-black font-medium">
+        Back
+      </button>
 
-        <h1 className="text-lg font-bold text-slate-900">
-          POS
-        </h1>
+      <h1 className="text-lg font-bold text-slate-900">
+        POS
+      </h1>
 
-        <div className="w-12" />
-      </div>
+      <div className="w-12" />
+    </div>
 
-      {/* MAIN CONTENT (natural scroll) */}
+    {/* SCROLL AREA */}
+    <div className="flex-1 overflow-y-auto">
       <div className="flex flex-col gap-4 p-4">
 
         {/* Scanner */}
@@ -83,29 +84,30 @@ const POSPage: React.FC<POSPageProps> = ({ onBack }) => {
         </div>
 
       </div>
-
-      {/* Product Modal */}
-      <ProductGridModal
-        isOpen={isProductsOpen}
-        onClose={() => setIsProductsOpen(false)}
-      />
-
-      {/* Receive Payment Dialog */}
-      <ReceivePaymentDialog
-        isOpen={isReceiveDialogOpen}
-        onClose={handleReceiveDialogClose}
-      />
-
-      {/* Celebration */}
-      {celebrationAmount !== null && (
-        <PaymentReceivedCelebration
-          amount={celebrationAmount}
-          onClose={() => setCelebrationAmount(null)}
-        />
-      )}
-
     </div>
-  );
+
+    {/* Product Modal */}
+    <ProductGridModal
+      isOpen={isProductsOpen}
+      onClose={() => setIsProductsOpen(false)}
+    />
+
+    {/* Receive Payment Dialog */}
+    <ReceivePaymentDialog
+      isOpen={isReceiveDialogOpen}
+      onClose={handleReceiveDialogClose}
+    />
+
+    {/* Celebration */}
+    {celebrationAmount !== null && (
+      <PaymentReceivedCelebration
+        amount={celebrationAmount}
+        onClose={() => setCelebrationAmount(null)}
+      />
+    )}
+
+  </div>
+);
 };
 
 export default POSPage;
