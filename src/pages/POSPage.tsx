@@ -75,7 +75,7 @@ const POSPage: React.FC<POSPageProps> = ({ onBack }) => {
         <Scanner />
 
         {/* Cart */}
-        <div className="rounded-2xl bg-white shadow overflow-hidden">
+        <div className="rounded-2xl bg-white shadow">
           <EmbeddedCart
             onCheckout={handleCheckout}
             onOpenProducts={() => setIsProductsOpen(true)}
