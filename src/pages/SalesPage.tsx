@@ -79,7 +79,7 @@ const SalesPage: React.FC<SalesPageProps> = ({ onBack }) => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="h-[100dvh] bg-slate-50 flex flex-col overflow-hidden">
 
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b bg-white">

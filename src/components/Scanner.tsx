@@ -68,9 +68,9 @@ export default function Scanner() {
         {/* Scanner Feed */}
         <div className="w-full max-w-xl mx-auto px-3">
           <div
-            id="reader"
-            className="w-full h-55 md:h-65 lg:h-75 overflow-hidden rounded-xl"
-          />
+  id="reader"
+  className="w-full h-[320px] md:h-[380px] overflow-hidden rounded-xl"
+/>
         </div>
 
         {/* Overlay Frame */}

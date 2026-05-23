@@ -60,56 +60,60 @@ const POSPage: React.FC<POSPageProps> = ({ onBack }) => {
   });
 
   return (
-    <div className="h-[100dvh] flex flex-col bg-slate-50 overflow-hidden">
+  <div className="min-h-[100dvh] flex flex-col bg-slate-50">
 
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-4 border-b border-slate-200 bg-white shrink-0">
-        <button onClick={onBack} className="text-black font-medium">
-          Back
-        </button>
-        <h1 className="text-lg font-bold text-slate-900">POS</h1>
-        <div className="w-12" />
+    {/* Header */}
+    <div className="flex items-center justify-between px-4 py-4 border-b border-slate-200 bg-white shrink-0 sticky top-0 z-20">
+      <button onClick={onBack} className="text-black font-medium">
+        Back
+      </button>
+
+      <h1 className="text-lg font-bold text-slate-900">
+        POS
+      </h1>
+
+      <div className="w-12" />
+    </div>
+
+    {/* Main Content */}
+    <div className="flex-1 flex flex-col gap-4 p-4 overflow-y-auto">
+
+      {/* Scanner */}
+      <div className="shrink-0">
+        <Scanner />
       </div>
 
-      {/* Main Content */}
-<div className="flex-1 flex flex-col gap-4 p-4 overflow-hidden">
-  
-  {/* Scanner Section */}
-  <div className="shrink-0">
-    <Scanner />
-  </div>
-
-  {/* Cart Section */}
-  <div className="flex-1 min-h-0 rounded-2xl bg-white shadow overflow-hidden">
-    <EmbeddedCart
-      onCheckout={handleCheckout}
-      onOpenProducts={() => setIsProductsOpen(true)}
-    />
-  </div>
-
-</div>
-
-      {/* Product Modal */}
-      <ProductGridModal
-        isOpen={isProductsOpen}
-        onClose={() => setIsProductsOpen(false)}
-      />
-
-      {/* Receive Payment Dialog */}
-      <ReceivePaymentDialog
-        isOpen={isReceiveDialogOpen}
-        onClose={handleReceiveDialogClose}
-      />
-
-      {/* Payment Received Celebration */}
-      {celebrationAmount !== null && (
-        <PaymentReceivedCelebration
-          amount={celebrationAmount}
-          onClose={() => setCelebrationAmount(null)}
+      {/* Cart */}
+      <div className="min-h-[500px] rounded-2xl bg-white shadow overflow-hidden">
+        <EmbeddedCart
+          onCheckout={handleCheckout}
+          onOpenProducts={() => setIsProductsOpen(true)}
         />
-      )}
+      </div>
+
     </div>
-  );
+
+    {/* Product Modal */}
+    <ProductGridModal
+      isOpen={isProductsOpen}
+      onClose={() => setIsProductsOpen(false)}
+    />
+
+    {/* Receive Payment Dialog */}
+    <ReceivePaymentDialog
+      isOpen={isReceiveDialogOpen}
+      onClose={handleReceiveDialogClose}
+    />
+
+    {/* Celebration */}
+    {celebrationAmount !== null && (
+      <PaymentReceivedCelebration
+        amount={celebrationAmount}
+        onClose={() => setCelebrationAmount(null)}
+      />
+    )}
+  </div>
+);
 };
 
 export default POSPage;

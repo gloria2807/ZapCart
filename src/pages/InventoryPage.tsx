@@ -56,7 +56,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({ onBack }) => {
   const canAdd = name && priceNgn && barcode.trim() && imageFile;
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="h-[100dvh] bg-white flex flex-col overflow-hidden">
 
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b">
@@ -142,7 +142,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({ onBack }) => {
       </div>
 
       {/* Product list */}
-      <div className="p-4 space-y-3">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {products.map((p) => (
           <div key={p.id} className="border rounded p-3 flex gap-3 items-center">
             <img src={p.image} alt={p.name} className="w-14 h-14 object-cover rounded shrink-0" />
