@@ -414,12 +414,24 @@ MIT License
 
 ---
 
-## Support
+## Acknowledgments
 
-For feedback, collaboration, or questions, feel free to open an issue or discussion in the repository.
+- [TypeScript](https://www.typescriptlang.org/) for the React framework
+- [Tailwind CSS](https://tailwindcss.com/) for styling
+- [Breez](https://sdk-doc-spark.breez.technology/) for Lightning payments
 
 ---
 
-## ZapCart
+## Support
 
-Helping small businesses move from manual stress to simple, instant, and reliable commerce.
+- **Documentation**: [Github README](https://github.com/gloria2807/ZapCart)
+- **Issues**: [GitHub Issues](https://github.com/gloria2807/ZapCart/issues)
+- **Contribution Guidelines**: [Github Contribution Doc](https://github.com/gloria2807/ZapCart?tab=contributing-ov-file)
+
+---
+
+## Links
+
+- **Website**: [lightning-o.vercel.app](zap-cart.vercel.app)
+- **Demo**: [Vimeo](https://vimeo.com/1194957098?share=copy&fl=sv&fe=ci)
+- **Documentation**: [Github README](https://github.com/gloria2807/ZapCart)
