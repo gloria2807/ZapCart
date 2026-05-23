@@ -349,6 +349,8 @@ http://localhost:3000
 
 ---
 
+When logging in through passkey, if you encounter "Failed to save label to Nostr", close tab and try again.
+
 ## Usage
 
 ### For Merchants
