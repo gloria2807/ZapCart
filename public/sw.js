@@ -1,15 +1,15 @@
-// Glow Service Worker
-const CACHE_NAME = 'glow-v15';
+// ZapCart Service Worker
+const CACHE_NAME = 'ZapCart-v15';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/icons/Glow_favicon.png',
-  '/icons/Glow-icon-192.png',
-  '/icons/Glow-icon-512.png',
-  '/icons/Glow-icon-maskable-192.png',
-  '/icons/Glow-icon-maskable-512.png',
-  '/assets/Glow_Logo.png',
+  '/icons/ZapCart_favicon.png',
+  '/icons/ZapCart-icon-192.png',
+  '/icons/ZapCart-icon-512.png',
+  '/icons/ZapCart-icon-maskable-192.png',
+  '/icons/ZapCart-icon-maskable-512.png',
+  '/assets/ZapCart_Logo.png',
   '/assets/logo-breez-header.svg',
 ];
 

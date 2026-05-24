@@ -380,7 +380,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack, config, onOpenFiatC
             onClick={devTap}
             className="text-gray-500 text-xs hover:text-gray-700 transition-colors select-none"
           >
-            Glow v1.0.0
+            ZapCart v1.0.0
             {isDevMode && (
               <span className="ml-1 text-black">(dev)</span>
             )}

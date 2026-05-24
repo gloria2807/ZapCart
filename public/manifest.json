@@ -1,6 +1,6 @@
 {
-  "name": "Glow",
-  "short_name": "Glow",
+  "name": "ZapCart",
+  "short_name": "ZapCart",
   "description": "Lightning fast Bitcoin payments powered by Breez SDK",
   "start_url": "/",
   "id": "/",
@@ -11,31 +11,31 @@
   "categories": ["finance", "utilities"],
   "icons": [
     {
-      "src": "/icons/Glow-icon-192.png",
+      "src": "/icons/ZapCart-icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/Glow-icon-512.png",
+      "src": "/icons/ZapCart-icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/Glow-icon-maskable-192.png",
+      "src": "/icons/ZapCart-icon-maskable-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/icons/Glow-icon-maskable-512.png",
+      "src": "/icons/ZapCart-icon-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/icons/Glow_favicon.png",
+      "src": "/icons/ZapCart_favicon.png",
       "sizes": "32x32",
       "type": "image/png"
     }

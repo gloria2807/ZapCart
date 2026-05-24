@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const rootDir = join(__dirname, '..');
 
-const inputPath = join(rootDir, 'public/assets/Glow_Logo.png');
+const inputPath = join(rootDir, 'public/assets/ZapCart_Logo.png');
 const outputDir = join(rootDir, 'public/icons');
 
 // Ensure output directory exists
@@ -16,10 +16,10 @@ if (!existsSync(outputDir)) {
 }
 
 const sizes = [
-  { name: 'Glow-icon-192.png', size: 192 },
-  { name: 'Glow-icon-512.png', size: 512 },
-  { name: 'Glow-icon-maskable-192.png', size: 192 },
-  { name: 'Glow-icon-maskable-512.png', size: 512 },
+  { name: 'ZapCart-icon-192.png', size: 192 },
+  { name: 'ZapCart-icon-512.png', size: 512 },
+  { name: 'ZapCart-icon-maskable-192.png', size: 192 },
+  { name: 'ZapCart-icon-maskable-512.png', size: 512 },
 ];
 
 async function resizeIcons() {
@@ -45,9 +45,9 @@ async function resizeIcons() {
         background: { r: 0, g: 0, b: 0, alpha: 0 }
       })
       .png({ quality: 90, compressionLevel: 9 })
-      .toFile(join(outputDir, 'Glow_favicon.png'));
+      .toFile(join(outputDir, 'ZapCart_favicon.png'));
     
-    console.log('✓ Created Glow_favicon.png (32x32)');
+    console.log('✓ Created ZapCart_favicon.png (32x32)');
     console.log('\nAll icons created successfully!');
   } catch (error) {
     console.error('Error resizing icons:', error);

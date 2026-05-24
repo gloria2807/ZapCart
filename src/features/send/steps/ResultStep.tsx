@@ -89,8 +89,8 @@ const ResultStep: React.FC<ResultStepProps> = ({ result, error, onClose, operati
       {/* Logo with sparkles */}
       <div className="relative w-20 h-20 flex items-center justify-center">
         <img
-          src="/assets/Glow_Logo.png"
-          alt="Glow"
+          src="/assets/ZapCart_Logo.png"
+          alt="ZapCart"
           className="w-16 h-16 object-contain drop-shadow-[0_0_20px_rgba(0,0,0,0.15)]"
         />
       </div>

@@ -72,7 +72,7 @@ const HomePage: React.FC<HomePageProps> = ({
           {/* Icon container */}
           <div className="relative w-36 h-36 flex items-center justify-center">
             <img
-              src="/assets/Glow_Logo.png"
+              src="/assets/ZapCart_Logo.png"
               alt="ZapCart"
               className="w-full h-full invert-0 brightness-0 object-contain"
               onClick={handleLogoTap}

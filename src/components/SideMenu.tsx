@@ -132,7 +132,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ isOpen, onClose, onLogout, onOpenSe
               <div className="flex items-center gap-3">
                 <div className="w-16 h-16 flex items-center justify-center relative">
                   <img
-                    src="/assets/Glow_Logo.png"
+                    src="/assets/ZapCart_Logo.png"
                     alt="ZapCart"
                     className="w-full h-full invert-0 brightness-0  object-contain"
                   />

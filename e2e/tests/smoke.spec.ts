@@ -18,7 +18,7 @@ test.describe('App Loading', () => {
     await expect(page.getByTestId('restore-wallet-button')).toBeVisible();
 
     // Verify branding elements
-    await expect(page.getByText('Glow')).toBeVisible();
+    await expect(page.getByText('ZapCart')).toBeVisible();
     await expect(page.getByText('Powered by Breez SDK')).toBeVisible();
   });
 

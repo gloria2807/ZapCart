@@ -76,7 +76,7 @@ const ProcessingStep: React.FC<ProcessingStepProps> = ({ operationType = 'paymen
         {/* Icon */}
         {isAuth ? renderIcon() : (
           <img
-            src="/assets/Glow_Logo.png"
+            src="/assets/ZapCart_Logo.png"
             alt="Processing"
             className="w-14 h-14 object-contain animate-pulse drop-shadow-[0_0_15px_rgba(0,0,0,0.15)]"
             style={{ animationDuration: '2s' }}

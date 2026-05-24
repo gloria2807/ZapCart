@@ -75,7 +75,7 @@ const LnurlAuthWorkflow: React.FC<LnurlAuthWorkflowProps> = ({ parsed, onBack, o
           <p className="text-black font-medium">{getActionText()}</p>
 
           <p className="text-gray-500 text-sm">
-            Glow will sign a message to prove your identity without sharing any personal information.
+            ZapCart will sign a message to prove your identity without sharing any personal information.
           </p>
         </div>
       </div>
