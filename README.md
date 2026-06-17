@@ -431,6 +431,6 @@ MIT License
 
 ## Links
 
-- **Website**: [zap-cart.vercel.app](zap-cart.vercel.app)
+- **Website**: [zapcartpos.vercel.app](zapcartpos.vercel.app)
 - **Demo**: [Vimeo](https://vimeo.com/1194957098?share=copy&fl=sv&fe=ci)
 - **Documentation**: [Github README](https://github.com/gloria2807/ZapCart)
